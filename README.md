@@ -5,9 +5,9 @@ Repository for the final assignment of the MGAI course at Leiden 20/21.
 ## Installation of MCedit
 
 ===== REPO =====
-
+```bash
 git clone --recursive https://github.com/mcgreentn/GDMC
-
+```
 ===== PACKAGES =====
 
 Python==2.7.16
