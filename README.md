@@ -5,9 +5,11 @@ Repository for the final assignment of the MGAI course at Leiden 20/21.
 ## Installation of MCedit
 
 ===== REPO =====
+
 git clone --recursive https://github.com/mcgreentn/GDMC
 
 ===== PACKAGES =====
+
 Python==2.7.16
 numpy==1.16.5
 pygame==1.9.4 *
@@ -21,6 +23,7 @@ xlib
 * = must be this version
 
 ===== SETUP =====
+
 python setup.py build_ext --inplace
 
 if fails:
