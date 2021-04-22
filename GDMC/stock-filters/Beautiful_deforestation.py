@@ -21,8 +21,10 @@ inputs = (
 #  - birch           -> 5*5
 # =================================================
 
-MAX_REC_DEPTH=20 # Max width of naturally generated trees in Minecraft
+MAX_REC_DEPTH=10  # Max width of naturally generated trees in Minecraft
 
+# TODO: - Check if leaf is inside box?
+#       - Make MAX_REC_DEPTH dependent on biome?
 
 # Removes leaves recursively
 def leave_removal(level, x, y, z, depth):
@@ -39,7 +41,6 @@ def leave_removal(level, x, y, z, depth):
   leave_removal(level, x, y, z+1, depth+1)
   leave_removal(level, x, y, z-1, depth+1)
   leave_removal(level, x, y+1, z, depth+1)
-
 
 # Remove a single tree
 def remove_tree(level, loc, biome):
@@ -61,10 +62,8 @@ def remove_tree(level, loc, biome):
     utilityFunctions.setBlock(level, (0,0), loc[0], loc[1], loc[2]) # Remove log
     loc = loc.__add__(step)
 
-
-# Start of the Deforestation
-# NOTE: at least one tree block should be within the given box
-def perform(level, box, options):
+# Given a box, remove all trees within that box
+def deforestation(level, box):
   tree_map = utilityFunctions.treeMap(level, box) # Column = x, Row = z
 
   # Search through given box for trees
@@ -73,3 +72,9 @@ def perform(level, box, options):
       if not pos == 0: # Coordinates (x,z) contains a log-block
         loc = box.origin.__add__(boundingBox.Vector(x, box.height, z))
         remove_tree(level, loc, level.biomeAt(loc[0], loc[1]))
+
+# Start of the Deforestation
+# NOTE: at least one tree block should be within the given box
+def perform(level, box, options):
+  deforestation(level, box)
+  
