@@ -49,7 +49,7 @@ def analyze_height_map(height_map):
     meta_dict = {}
 
     min_altitude, max_altitude, sd_altitude = np.min(height_map), np.max(height_map), np.round(np.std(height_map), 2)
-    quantiles = (np.quantile(height_map, (0.1, 0.25, 0.75, 0.9))
+    quantiles = (np.quantile(height_map, (0.1, 0.25, 0.75, 0.9)))
     return min_altitude, max_altitude, sd_altitude, quantiles
 
 def perform(level, box, options):
