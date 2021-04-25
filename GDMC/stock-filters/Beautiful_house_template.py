@@ -204,14 +204,41 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
         placeStairsRight(door_x, door_y, door_z, base_y)
     '''
 
+    '''
+    ("Pick a block:", alphaMaterials.Grass),
+    ("Replace Only:", True),
+    ("", alphaMaterials.Stone)
+    '''
+
+#"""
+inputs = (
+    ("length (x)", (8, 0, 128)),
+    ("height (y)", (4, 0, 128)),
+    ("length (z)", (6, 0, 128)),
+    ("offset (x)", (0, -256, 256)),
+    ("offset (y)", (4, 0, 256)),
+    ("offset (z)", (0, -256, 256))
+)
+#"""
+
 
 def perform(level, box, options):
+    #'''
+    height_y = options["height (y)"]
+    length_z = options["length (z)"]
+    length_x = options["length (x)"]
+    base_x = options["offset (x)"]
+    base_y = options["offset (y)"]
+    base_z = options["offset (z)"]
+    #'''
+    '''
     height_y = 20
     length_z = 6
     length_x = 8
     base_x = 0
     base_y = 4
     base_z = 0
+    #'''
     build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
 
 	#TODO: windows, roof and facade top (different styles)
