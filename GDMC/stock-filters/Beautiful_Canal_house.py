@@ -4,36 +4,21 @@ import random
 
 # Information visible in mcedit, can be used for user-input
 inputs = (
-	("Settlement Generator", "label"),
-	("Creators: Koen and Sem", "label")
-	)
-#TODO test below:
-def placeStairsLeft(door_x, door_y, door_z, ground_y):
-	stair_y = door_y
-	stair_x = door_x
-	stair_z = door_z
-	while stair_y > ground_y:
-		stair_y -= 1
-		stair_x -= 1
-		for i in range(base_y, stair_y):
-			utilityFunctions.setBlock(level, (4,0), stair_x, i, stair_z-1)
-
-		utilityFunctions.setBlock(level, (67,0), stair_x, stair_y, stair_z-1)
-
-
-
-def placeStairsRight(door_x, door_y, door_z, ground_y):
-	stair_y = door_y
-	stair_x = door_x
-	stair_z = door_z
-	while stair_y > ground_y:
-		stair_y -= 1
-		stair_x += 1
-		for i in range(base_y, stair_y):
-			utilityFunctions.setBlock(level, (4,0), stair_x, i, stair_z-1)
-
-		utilityFunctions.setBlock(level, (67,0), stair_x, stair_y, stair_z-1)
-#TODO test above:
+	("Canal House Generator", "label"),
+	("Creator: Koen", "label"),
+    ("length (x)", (8, 0, 128)),
+    ("height (y)", (4, 0, 128)),
+    ("length (z)", (6, 0, 128)),
+    ("offset (x)", (0, -256, 256)),
+    ("offset (y)", (4, 0, 256)),
+    ("offset (z)", (0, -256, 256)),
+    ("door location (W=0, N=1, E=2, S=3)", (0, 0, 3))
+)
+'''
+("Pick a block:", alphaMaterials.Grass),
+("Replace Only:", True),
+("", alphaMaterials.Stone)
+'''
 
 def east_west_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z):
     z_center = base_z + length_z/2
@@ -121,7 +106,7 @@ def north_south_roof(level, box, options, length_x, height_y, length_z, base_x, 
 #  @ level: Minecraft world
 #  @ box: selected box by mcedit
 #  @ options: user defined inputs from mcedit
-def build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z):
+def build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc):
     #Walls of the house:
     x = base_x#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
@@ -158,26 +143,21 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
             utilityFunctions.setBlock(level, (1,0), x, base_y-1, z)
 
     #doors and windows:
-    x_door = random.randint(0, 1)
+    #x_door = random.randint(0, 1)
     #door_x = 0
     #door_z = 0
-    if x_door == 1:
-        #door in x section
+    if door_loc % 2 == 0:
+        #door in E/W section
+        east_west_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
         door_z = random.randint(base_z + 2, base_z + length_z - 2)
-        door_x = random.randint(0, 1)
-        if door_x == 0:
-            door_x = base_x
-        else:
-            door_x = base_x + length_x - 1
+        door_x = base_x if door_loc == 0 else base_x + length_x - 1
+
     else:
-        #door in z section
+        #door in N/S section
+        north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
         door_x = random.randint(base_x + 2, base_x+length_x - 2)
-        door_z = random.randint(0, 1)
-        if door_z == 0:
-            door_z = base_z
-        else:
-            door_z = base_z + length_z - 1
-    
+        door_z = base_z if door_loc == 1 else base_z + length_z - 1
+
     #floor block underneeth door:
     utilityFunctions.setBlock(level, (1,0), door_x, base_y - 1, door_z)
 
@@ -185,12 +165,16 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
     utilityFunctions.setBlock(level, (0,0), door_x, base_y, door_z)
     utilityFunctions.setBlock(level, (0,0), door_x, base_y + 1, door_z)
     
+    #setBlock(x, y, z,"acacia_door")
     #place actual door:
-    utilityFunctions.setBlock(level, (71,0), door_x, base_y, door_z)
-    utilityFunctions.setBlock(level, (71,7), door_x, base_y + 1, door_z)
-    #utilityFunctions.setBlock(level, (71,0), door_x, base_y + 1, door_z)
+    # "acacia_door"
+    #utilityFunctions.setBlock(level, ("acacia_door", door_loc), door_x, base_y, door_z)
+    #utilityFunctions.setBlock(level, "acacia_door[half=upper]", door_x, base_y, door_z)
 
-    north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
+    utilityFunctions.setBlock(level, (71, door_loc), door_x, base_y, door_z)
+    utilityFunctions.setBlock(level, (71, door_loc)[half=upper], door_x, base_y+1, door_z)
+
+    #north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
     '''
     for i in range(base_y, door_y):
         utilityFunctions.setBlock(level, (4,0), door_x, i, door_z-1)
@@ -204,22 +188,7 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
         placeStairsRight(door_x, door_y, door_z, base_y)
     '''
 
-    '''
-    ("Pick a block:", alphaMaterials.Grass),
-    ("Replace Only:", True),
-    ("", alphaMaterials.Stone)
-    '''
-
-#"""
-inputs = (
-    ("length (x)", (8, 0, 128)),
-    ("height (y)", (4, 0, 128)),
-    ("length (z)", (6, 0, 128)),
-    ("offset (x)", (0, -256, 256)),
-    ("offset (y)", (4, 0, 256)),
-    ("offset (z)", (0, -256, 256))
-)
-#"""
+    
 
 
 def perform(level, box, options):
@@ -230,16 +199,10 @@ def perform(level, box, options):
     base_x = options["offset (x)"]
     base_y = options["offset (y)"]
     base_z = options["offset (z)"]
+    door_loc = options["door location (W=0, N=1, E=2, S=3)"]
     #'''
-    '''
-    height_y = 20
-    length_z = 6
-    length_x = 8
-    base_x = 0
-    base_y = 4
-    base_z = 0
-    #'''
-    build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
+
+    build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc)
 
 	#TODO: windows, roof and facade top (different styles)
 
