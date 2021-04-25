@@ -5,7 +5,7 @@ import random
 # Information visible in mcedit, can be used for user-input
 inputs = (
 	("Settlement Generator", "label"),
-	("Creators: me", "label")
+	("Creators: Koen and Sem", "label")
 	)
 #TODO test below:
 def placeStairsLeft(door_x, door_y, door_z, ground_y):
@@ -121,14 +121,7 @@ def north_south_roof(level, box, options, length_x, height_y, length_z, base_x, 
 #  @ level: Minecraft world
 #  @ box: selected box by mcedit
 #  @ options: user defined inputs from mcedit
-def perform(level, box, options):
-    height_y = 4
-    length_z = 7
-    length_x = 9
-    base_x = 0
-    base_y = 4
-    base_z = 0
-
+def build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z):
     #Walls of the house:
     x = base_x#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
@@ -210,6 +203,17 @@ def perform(level, box, options):
         placeStairsLeft(door_x, door_y, door_z, base_y)
         placeStairsRight(door_x, door_y, door_z, base_y)
     '''
+
+
+def perform(level, box, options):
+    height_y = 20
+    length_z = 6
+    length_x = 8
+    base_x = 0
+    base_y = 4
+    base_z = 0
+    build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
+
 	#TODO: windows, roof and facade top (different styles)
 
 	# while loop over windows: every 2 blocks, set as window if not door_x
