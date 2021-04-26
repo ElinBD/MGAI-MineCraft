@@ -12,7 +12,8 @@ inputs = (
     ("offset (x)", (0, -256, 256)),
     ("offset (y)", (4, 0, 256)),
     ("offset (z)", (0, -256, 256)),
-    ("door location (W=0, N=1, E=2, S=3)", (0, 0, 3))
+    ("door location (W=0, N=1, E=2, S=3)", (0, 0, 3)),
+    ("number of floors", (2, 1, 5))
 )
 '''
 ("Pick a block:", alphaMaterials.Grass),
@@ -32,7 +33,6 @@ def east_west_roof(level, box, options, length_x, height_y, length_z, base_x, ba
         if length_z % 2 != 0:
             adjust = 1
             utilityFunctions.setBlock(level, (4,0), x, y - 1, z_center)
-            #z_center = base_z + length_z/2 + 1
 
         y = base_y+height_y
         for z in range(base_z + length_z - 1, z_south, -1):
@@ -40,7 +40,7 @@ def east_west_roof(level, box, options, length_x, height_y, length_z, base_x, ba
             y += 1
     
     y_r = base_y+height_y
-    #'''
+
     for z in range(base_z, z_center):
         for y in range(base_y+height_y, y_r):
             utilityFunctions.setBlock(level, (4,0), base_x, y, z)
@@ -52,7 +52,6 @@ def east_west_roof(level, box, options, length_x, height_y, length_z, base_x, ba
         for y in range(base_y+height_y, y_r - 1):
             utilityFunctions.setBlock(level, (4,0), base_x, y, z_center)
             utilityFunctions.setBlock(level, (4,0), base_x + length_x - 1, y, z_center)
-        # z_center = base_z + length_z/2 + 1
 
     y_r = base_y+height_y
     for z in range(base_z + length_z - 1, z_south, -1):
@@ -60,7 +59,7 @@ def east_west_roof(level, box, options, length_x, height_y, length_z, base_x, ba
             utilityFunctions.setBlock(level, (4,0), base_x, y, z)
             utilityFunctions.setBlock(level, (4,0), base_x + length_x - 1, y, z)
         y_r += 1
-    #'''
+
 
 def north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
@@ -100,43 +99,99 @@ def north_south_roof(level, box, options, length_x, height_y, length_z, base_x, 
             utilityFunctions.setBlock(level, (4,0), x, y, base_z + length_z - 1)
         y_r += 1
 
-    
-
-# Start of the Generation script
-#  @ level: Minecraft world
-#  @ box: selected box by mcedit
-#  @ options: user defined inputs from mcedit
-def build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc):
+def build_floor(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, front_side, stair_loc, top_offset):
+    wall_block = (20,0)
     #Walls of the house:
     x = base_x#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
-        for y in range(base_y, base_y + height_y):
-            utilityFunctions.setBlock(level, (4,0), x, y, z)
+        for y in range(base_y, base_y + height_y + top_offset):
+            utilityFunctions.setBlock(level, wall_block, x, y, z)
 
     z = base_z
     for x in range (base_x + 1, base_x + length_x - 1):#x-directional wall
-        for y in range(base_y, base_y + height_y):
-            utilityFunctions.setBlock(level, (4,0), x, y, z)
+        for y in range(base_y, base_y + height_y + top_offset):
+            utilityFunctions.setBlock(level, wall_block, x, y, z)
 
-    #other walls:
+    #Other walls:
     x = base_x + length_x - 1#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
-        for y in range(base_y, base_y + height_y):
-            utilityFunctions.setBlock(level, (4,0), x, y, z)
+        for y in range(base_y, base_y + height_y + top_offset):
+            utilityFunctions.setBlock(level, wall_block, x, y, z)
 
     z = base_z + length_z - 1
     for x in range (base_x + 1, base_x + length_x - 1):#x-directional wall
-        for y in range(base_y, base_y + height_y):
-            utilityFunctions.setBlock(level, (4,0), x, y, z)
+        for y in range(base_y, base_y + height_y + top_offset):
+            utilityFunctions.setBlock(level, wall_block, x, y, z)
 
     #Corner Pillars:
-    
-    for y in range(base_y, base_y+height_y):
+    for y in range(base_y, base_y+height_y + top_offset):
          utilityFunctions.setBlock(level, (3,0), base_x, y, base_z)
          utilityFunctions.setBlock(level, (3,0), base_x, y, base_z + length_z - 1)
          utilityFunctions.setBlock(level, (3,0), base_x + length_x - 1, y, base_z)
          utilityFunctions.setBlock(level, (3,0), base_x + length_x - 1, y, base_z + length_z - 1)
     
+    if stair_loc == 0:
+        #stair on west side, grow to south side
+        start_x = base_x + 1
+        start_z = base_z + length_z - height_y - 2
+
+        for i in range(height_y):
+            utilityFunctions.setBlock(level, (67,2), start_x, base_y+i, start_z+i)
+            if i < height_y - 1:
+                utilityFunctions.setBlock(level, (67,7), start_x, base_y+i, start_z+i+1)
+            else:#one extra floor block for more convenient walking
+                utilityFunctions.setBlock(level, (1,0), start_x, base_y+i, start_z+i+1)
+        
+        y_ceiling = base_y + height_y - 1
+
+        for z in range(base_z + 1, start_z):
+            utilityFunctions.setBlock(level, (1,0), base_x + 1, y_ceiling, z)
+        for x in range (base_x + 2, base_x + length_x - 1):
+            for z in range(base_z + 1, base_z + length_z - 1):
+                utilityFunctions.setBlock(level, (1,0), x, y_ceiling, z)
+    #elif stair_loc == 1:
+        #stair on north side grow to west side
+    elif stair_loc == 2:
+        #stair on east side grow to north side
+        start_x = base_x + length_x - 2
+        start_z = base_z + height_y + 1
+        utilityFunctions.setBlock(level, (67,1), start_x, base_y, start_z)
+        
+        for i in range(height_y):
+            utilityFunctions.setBlock(level, (67,3), start_x, base_y+i, start_z-i)
+            if i < height_y - 1:
+                utilityFunctions.setBlockIfEmpty(level, (67,6), start_x, base_y+i, start_z-i-1)
+            else:#one extra floor block for more convenient walking
+                utilityFunctions.setBlockIfEmpty(level, (1,0), start_x, base_y+i, start_z-i-1)
+        
+        y_ceiling = base_y + height_y - 1
+
+        for z in range(start_z + 1, base_z + length_z - 1):
+            utilityFunctions.setBlock(level, (1,0), base_x + length_x - 2, y_ceiling, z)
+        for x in range (base_x + 1, base_x + length_x - 2):
+            for z in range(base_z + 1, base_z + length_z - 1):
+                utilityFunctions.setBlock(level, (1,0), x, y_ceiling, z)
+    #else: #if stair_loc == 3:
+        #stair on south side grow to east side
+
+# Start of the Generation script
+#  @ level: Minecraft world
+#  @ box: selected box by mcedit
+#  @ options: user defined inputs from mcedit
+def build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc, no_floors):
+    #Walls:
+    temp_base_y = base_y
+    stair_loc = 0
+    for i in range(no_floors):
+        if i == no_floors - 1:
+            build_floor(level, box, options, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 1)
+        else:
+            build_floor(level, box, options, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 0)
+        stair_loc += 2
+        stair_loc %= 4
+        temp_base_y += height_y
+    temp_base_y -= height_y - 1
+
     #floor:
     for x in range (base_x + 1, base_x + length_x - 1):
         for z in range(base_z + 1, base_z + length_z - 1):
@@ -146,15 +201,18 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
     #x_door = random.randint(0, 1)
     #door_x = 0
     #door_z = 0
+
+    door_loc = 1
+
     if door_loc % 2 == 0:
         #door in E/W section
-        east_west_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
+        east_west_roof(level, box, options, length_x, height_y, length_z, base_x, temp_base_y, base_z)
         door_z = random.randint(base_z + 2, base_z + length_z - 2)
         door_x = base_x if door_loc == 0 else base_x + length_x - 1
 
     else:
         #door in N/S section
-        north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
+        north_south_roof(level, box, options, length_x, height_y, length_z, base_x, temp_base_y, base_z)
         door_x = random.randint(base_x + 2, base_x+length_x - 2)
         door_z = base_z if door_loc == 1 else base_z + length_z - 1
 
@@ -172,7 +230,7 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
     #utilityFunctions.setBlock(level, "acacia_door[half=upper]", door_x, base_y, door_z)
 
     utilityFunctions.setBlock(level, (71, door_loc), door_x, base_y, door_z)
-    utilityFunctions.setBlock(level, (71, door_loc)[half=upper], door_x, base_y+1, door_z)
+    #utilityFunctions.setBlock(level, (71, door_loc)[half=upper], door_x, base_y+1, door_z)
 
     #north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
     '''
@@ -200,9 +258,11 @@ def perform(level, box, options):
     base_y = options["offset (y)"]
     base_z = options["offset (z)"]
     door_loc = options["door location (W=0, N=1, E=2, S=3)"]
+    no_floors = options["number of floors"]
     #'''
 
-    build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc)
+    #build_floor(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, 1, 2)
+    build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc, no_floors)
 
 	#TODO: windows, roof and facade top (different styles)
 
