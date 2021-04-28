@@ -1,4 +1,4 @@
-from Beautiful_meta_analysis import *
+from Beautiful_meta_analysis import get_block_type_counts, get_biom_type_counts
 from pymclevel.biome_types import biome_types
 from pymclevel.box import BoundingBox
 from pymclevel import biome_types
@@ -12,12 +12,13 @@ ranges_dict = {8: 'NL',
                12: 'desert',
                2: 'field'}
 
-color_palets = {'NL': {'wall': ,
-                       'roof':  },
-                'desert': {'wall': ,
-                       'roof':  },
-                'field': {'wall': ,
-                       'roof':  }
+#color_palets = {'NL': {'wall': ,
+#                       'roof':  ,
+#},
+#                'desert': {'wall': ,
+#                       'roof':  },
+#                'field': {'wall': ,
+#                       'roof':  }
                 }
 
 

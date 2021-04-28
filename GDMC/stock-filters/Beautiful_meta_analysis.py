@@ -48,6 +48,9 @@ def get_height_map(level, box):
         for y in xrange(box.miny, box.maxy, +1):
             if level.blockAt(pos[0], y, pos[1]) != 0:
                 height += 1
+            if y == box.maxy:
+                height = box.maxy
+                continue
             else:
                 height_map[pos[0]-box.minx, pos[1]-box.minz] = height
                 continue
