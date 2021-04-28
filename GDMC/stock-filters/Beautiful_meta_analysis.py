@@ -24,6 +24,8 @@ def get_block_type_counts(level, box, options):
 
 def get_height_map(level, box):
 
+    #think of way to deal with caves
+
     size = box.size
     pos_top_layer = itertools.product(xrange(box.minx, box.maxx),
                                       xrange(box.minz, box.maxz)
@@ -54,10 +56,13 @@ def analyze_height_map(height_map):
 
 def perform(level, box, options):
     block_types = get_block_type_counts(level, box, options)
-    print(block_types)
+    print 'Block types:'
+    print block_types
     height_map = get_height_map(level, box)
-    print(height_map)
+    print 'Height map'
+    print height_map
     height_map_data = analyze_height_map(height_map)
-    print(height_map_data)
+    print 'Summary'
+    print height_map_data
 
 
