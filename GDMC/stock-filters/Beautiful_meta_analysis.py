@@ -22,6 +22,17 @@ def get_block_type_counts(level, box, options):
         block_type_count[block] += 1
     return(block_type_count)
 
+def get_biom_type_counts(level, box, options):
+    biom_type_count = {}
+
+    for pos in box.positions:
+        biom = biome_types.biome_types[level.biomeAt(pos[0], pos[2])]
+        # biom = level.biomAt(pos[0], pos[1] , pos[2])
+        if biom not in biom_type_count.keys():
+            biom_type_count[biom] = 0
+        biom_type_count[biom] += 1
+    return(biom_type_count)
+
 def get_height_map(level, box):
 
     #think of way to deal with caves
