@@ -112,6 +112,9 @@ class Graph:
     selected = np.zeros((self.size_x, self.size_x), dtype=int)
     selected[self.x1][self.z1] = True
     n_nodes = 0
+    total_nodes = self.size_x*self.size_z
+
+    adlist = [ [ [] for _ in range(self.size_z) ] for _ in range(self.size_x) ]  # Adjacency list
 
     dx = [-1, 0, 1, 0]  # Top, Right, Bottom, Left
     dz = [0, 1, 0, -1]
@@ -129,9 +132,13 @@ class Graph:
                 if minimum > self.graph[x][z].get_neighbour(k):
                   minimum = self.graph[x][z].get_neighbour(k)
                   i, j = (x,z), (x+dx[k], z+dz[k])
-      print(i, "-", j, ":", self.graph[j[0]][j[1]].get_dst())  # TODO: transform to adjacency matrix
+
+      adlist[i[0]][i[1]].append(j)  # Add to adjacency list
+
       selected[j[0]][j[1]] = True
       n_nodes += 1
+    
+    return adlist
 
 
 # Connect points p1 and p2 with a road
@@ -141,12 +148,36 @@ def connect_points(level, box, p1, p2):
   start = (p1[0] - box.origin[0], p1[2] - box.origin[2])
   end = (p2[0] - box.origin[0], p2[2] - box.origin[2])
 
-  G = Graph(get_height_map(level, box), box.size, start, end)
-  G.Prim()
+  height_map = get_height_map(level, box)
+  G = Graph(height_map, box.size, start, end)
+  adlist = G.Prim()
 
+  """ PRINTS THE ADJACENCY LIST
+  for x in range(box.size[0]):
+    for z in range(box.size[2]):
+      point = (x,z)
+      string = ""
+      for item in adlist[x][z]:
+        string += str(item)
+      print str(point) + " -> " + string
+  """
+  
+  # Find path from end -> start with the adlist
+  cur = (end[0]-1, end[1]-1)
+  path = [cur]
+  while not cur == start:
+    for x in range(box.size[0]):
+      for z in range(box.size[2]):
+        if cur in adlist[x][z]:
+          cur = (x,z)
+          path.append((x,z))
 
-
-
+  # Create pathblocks 
+  for block in path:
+    utilityFunctions.setBlock(level, (35,10), 
+                              box.origin[0]+block[0], 
+                              box.origin[1]+height_map[block[0]][block[1]]-1,
+                              box.origin[2]+block[1])
 
 def perform(level, box, options):
   connect_points(level, box, box.origin, box.maximum)
