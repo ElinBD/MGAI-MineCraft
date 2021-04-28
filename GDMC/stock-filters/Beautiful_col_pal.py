@@ -10,10 +10,16 @@ inputs = (
 
 ranges_dict = {8: 'NL',
                12: 'desert',
-               2: ''}
+               2: 'field'}
 
-def get_color_palet():
-    return None
+color_palets = {'NL': {'wall': ,
+                       'roof':  },
+                'desert': {'wall': ,
+                       'roof':  },
+                'field': {'wall': ,
+                       'roof':  }
+                }
+
 
 def get_most_frequent_block(block_types):
     block_types = block_types.pop(0)
@@ -25,4 +31,6 @@ def perform(level, box, options):
     # print biom_types
 
     most_freq_block_type = get_most_frequent_block(block_types)
-    print(most_freq_block_type)
+    landscape_type = ranges_dict[most_freq_block_type]
+    return color_palets[landscape_type]
+    # print(most_freq_block_type)
