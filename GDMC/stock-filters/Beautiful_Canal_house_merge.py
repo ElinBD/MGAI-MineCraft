@@ -77,6 +77,11 @@ def small_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y
         utilityFunctions.setBlock(level, (67,1), x, y, base_z)
         y += 1
 
+    if length_x % 2 != 0: # Building has an uneven with. Random chance to place another block in the middle on top
+        extra_top = random.randint(0, 1)
+        if extra_top:
+            utilityFunctions.setBlock(level, (44,0), x_center, y, base_z)
+
 def large_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
@@ -114,14 +119,14 @@ def clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_
     utilityFunctions.setBlock(level, (67,0), side_parts, facade_height-1, base_z)
     utilityFunctions.setBlock(level, (67,1), length_x-side_parts-1, facade_height-1, base_z)
 
-    print "Building facade 2"
+    # print "Building facade 2"
     for x in range(side_parts, x_center):
         y = facade_height
         y_r = facade_height + (x-side_parts) * 0.5
-        print "Coor"
-        print x
-        print y
-        print y_r
+        # print "Coor"
+        # print x
+        # print y
+        # print y_r
         while y < y_r:
             if y_r-y > 0.5:
                 utilityFunctions.setBlock(level, (4,0), x, y, base_z)
@@ -135,10 +140,10 @@ def clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_
     for x in range(length_x-side_parts-1, x_center-1, -1):
         y = facade_height
         y_r = facade_height + ((length_x-side_parts-1)-x) * 0.5
-        print "Coor"
-        print x
-        print y
-        print y_r
+        # print "Coor"
+        # print x
+        # print y
+        # print y_r
         while y < y_r:
             if y_r-y > 0.5:
                 utilityFunctions.setBlock(level, (4,0), x, y, base_z)
@@ -181,7 +186,22 @@ def facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z, fac
         clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z) # Center of facade
 
 
+def windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors): # This function currently assumes the building has an uneven width
+    utilityFunctions.setBlock(level, (4,0), door_x, base_y+2, base_z) # Window above the door
+    for i in range(base_x+1, length_x, 2):
+        if i != door_x:
+            utilityFunctions.setBlock(level, (4,0), i, base_y+1, base_z)
+            utilityFunctions.setBlock(level, (4,0), i, base_y+2, base_z)
 
+    print height_y
+    print temp_base_y
+
+    y_r = base_y + height_y + 1
+    for i in range(1, no_floors):
+        for j in range(base_x+1, length_x, 2):
+            utilityFunctions.setBlock(level, (4,0), j, y_r, base_z)
+            utilityFunctions.setBlock(level, (4,0), j, y_r+1, base_z)
+        y_r += height_y
 
 
 def north_south_roof(level, box, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
@@ -339,9 +359,9 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
         #door in N/S section
         north_south_roof(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
         facade(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
-        # windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
-        door_x = random.randint(base_x + 2, base_x+length_x - 2)
+        door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
         door_z = base_z if door_loc == 1 else base_z + length_z - 1
+        windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors)
 
     #floor block underneeth door:
     utilityFunctions.setBlock(level, (1,0), door_x, base_y - 1, door_z)
