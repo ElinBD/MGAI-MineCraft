@@ -230,6 +230,7 @@ def build_house(level, box, options, length_x, height_y, length_z, base_x, base_
     #utilityFunctions.setBlock(level, "acacia_door[half=upper]", door_x, base_y, door_z)
 
     utilityFunctions.setBlock(level, (71, door_loc), door_x, base_y, door_z)
+    utilityFunctions.setBlock(level, (71, door_loc + 8), door_x, base_y + 1, door_z)
     #utilityFunctions.setBlock(level, (71, door_loc)[half=upper], door_x, base_y+1, door_z)
 
     #north_south_roof(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z)
