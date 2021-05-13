@@ -52,7 +52,7 @@ slabs = [(43, 0), (43, 1), (43, 2), (43, 3), (43, 4), (43, 5),
 # alphaMaterials.RedSandstoneSlab = alphaMaterials[182, 0]
 # alphaMaterials.PurpurSlab = alphaMaterials[205, 0]
 
-pillars = [(202, 0)]
+# pillars = [(202, 0)]
 # alphaMaterials.PurpurPillar = alphaMaterials[202, 0]
 
 windows = [(95, 0), (102, 0), (160, 0)]
@@ -76,16 +76,18 @@ floors = [(70, 0), (72, 0)]
 # alphaMaterials.StoneFloorPlate = alphaMaterials[70, 0]
 # alphaMaterials.WoodFloorPlate = alphaMaterials[72, 0]
 
+walls = []
+
 blocks_dict = {8: 'NL',
                12: 'desert'}
 
 bioms_dict = {6: 'NL',
                2: 'desert'}
 
-color_palets = {'NL': {'Wall': slabs,
+color_palets = {'NL': {'Wall': walls,
                 'staircase': stairs,
                 'rooftop staircase': stairs,
-                'pilar': pillars,
+                # 'pilar': pillars,
                 'windows': windows,
                 'door': doors,
                 'floor': floors,
