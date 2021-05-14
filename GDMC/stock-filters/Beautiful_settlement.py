@@ -63,7 +63,10 @@ class Settlement:
     for block in lst:
       self.__place_grid(WATER, block[0], block[2], 0)
       self.__place_grid(AIR, block[0], block[2], 1)
-
+    
+      if self.level.blockAt(block[0], self.__get_height(block[0], block[2])+2, block[2]) == OUTER_WALL[0]:
+        self.__place_grid(WATER_GATE, block[0], block[2], 2)
+        
 
   # Generate inner canals from P1 and P2 to center, then to P0
   def __generate_inner_canals(self, P0, P1, P2):
@@ -149,9 +152,9 @@ class Settlement:
   # Place wall, starting at (x,y,z)
   def __place_wall(self, x, y, z):
     L = LEN_WALL + 1 if random.uniform(0,1) >= 0.5 else LEN_WALL
-    utility.setBlock(self.level, AIR, x, y+LEN_WALL+1, z)
     for l in range(L):
       utility.setBlock(self.level, OUTER_WALL, x, y+l, z)
+    utility.setBlock(self.level, AIR, x, y+LEN_WALL+1, z)
     
 
   # Generates the foundation of the settlement and adds walls surrounding it
@@ -173,8 +176,7 @@ class Settlement:
             y = self.__get_height(x+i, z+j)
             if not self.level.blockAt(x+i, y, z+j) == WATER[0]:
               if self.__count_water(x+i, z+j) > 0 and not self.level.blockAt(x+i, y, z+j) == OUTER_WALL[0]:  # Create wall at (x+i,z+j)
-                utility.setBlock(self.level, OUTER_WALL, x+i, y+1, z+j)
-                #self.__place_wall(x+i, y, z+j)
+                self.__place_wall(x+i, y, z+j)
               else:  # Foundation floor
                 utility.setBlock(self.level, ROAD, x+i, y, z+j)
 
@@ -189,6 +191,8 @@ class Settlement:
       for z in range(P1[1], P2[1]):
         y = self.__get_height(x, z)
         if not self.level.blockAt(x, y, z) == ROAD[0]:  # Not road -> not empty
+          return False
+        if not self.level.blockAt(x, y+1, z) == AIR[0]: # Not air -> not empty
           return False
     return True
 
@@ -310,10 +314,14 @@ class Settlement:
     for i in range(-SPARSITY, SPARSITY+1):
       for j in range(-SPARSITY, SPARSITY+1):
         y = self.__get_height(x+i, z+j)
+
         # Check if 3x3 grid is available
-        if i in range(-1, 2) and j in range(-1, 2):  # 3x3 grid
+        if i in range(-1, 2) and j in range(-1, 2):
+          if not self.level.blockAt(x+i, y+1, z+j) == AIR[0]:
+            return False
           if not self.level.blockAt(x+i, y, z+j) == ROAD[0]:
             return False
+        
         # Check for nearby street lights
         if self.level.blockAt(x+i, y+1, z+j) == POLE[0]:
           return False
