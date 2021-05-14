@@ -10,7 +10,7 @@ from Beautiful_settings import *
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
-	("Creators: Koen, Elin, Tim, Sem, Jerry", "label")
+	("Creators: Koen, Elin, Tim, Sem, Jerryyyyyyyy", "label")
 	)
 
 
@@ -199,7 +199,7 @@ class Settlement:
         block = self.level.blockAt(x, y, z)
         if not P1_x <= x < P1_x+length:
           if x < P1_x and (block == ROAD[0] or block == WATER[0]):  # EAST
-            space[1] += 1
+            space[0] += 1
             if block == WATER[0]:  # Point towards canal
               space[1] += CANAL_VALUE
           elif x > P1_x+length-1 and (block == ROAD[0] or block == WATER[0]):  # WEST
@@ -212,7 +212,7 @@ class Settlement:
             if block == WATER[0]:  # Point towards canal
               space[2] += CANAL_VALUE
           elif z > P1_z+width-1 and (block == ROAD[0] or block == WATER[0]):  # NORTH
-            space[0] += 1
+            space[1] += 1
             if block == WATER[0]:  # Point towards canal
               space[0] += CANAL_VALUE
     
@@ -228,30 +228,41 @@ class Settlement:
   # Determine front of every building based on space around it
   # Also creates a new Building object, storing all necessary data
   def __determine_front(self, temp):
-    for building in temp:
-      # NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3
+    for building in temp:      
       i = self.__compute_space(building)
 
       # TODO: remove =====================================================
       P1_x, P1_y, P1_z = building[0][0], building[0][1], building[0][2]
       length, width = building[1][0], building[1][1]
-      if i == 1:
+      if i == 0:    # WEST
         for z in range(0, width):
           y = self.__get_height(P1_x, P1_z+z)
           utility.setBlock(self.level, (57,0), P1_x, 3, P1_z+z)
-      elif i == 0:
+      elif i == 1:  # SOUTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z+width+1)
           utility.setBlock(self.level, (57,0), P1_x+x, 3, P1_z+width-1)
-      elif i == 2:
+      elif i == 2:  # NORTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z)
           utility.setBlock(self.level, (57,0), P1_x+x, 3, P1_z)
-      elif i == 3:
+      elif i == 3:  # EAST
         for z in range(0, width):
           y = self.__get_height(P1_x+length-1, P1_z+z)
           utility.setBlock(self.level, (57,0), P1_x+length-1, 3, P1_z+z)
       # ==================================================================
+      
+      # Convert i to correct format for building
+      # Currently: NORTH = 2, EAST = 3, SOUTH = 1, WEST = 0
+      # Should be: NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3
+      if i == 0:    # WEST
+        i = 3
+      elif i == 1:  # SOUTH
+        i = 2
+      elif i == 2:  # NORTH
+        i = 0
+      else:         # EAST
+        i = 1
 
       self.buildings.append(Building(building[0], length, width, i))  # Add new building
 
@@ -284,6 +295,43 @@ class Settlement:
       # TODO: generate(self.level, building.P, building.length, building.width, building.front)
 
 
+  # Check whether a 3x3 grid is available and that there is no light
+  # in its NxN grid
+  def __street_light(self, x, z):
+    for i in range(-SPARSITY, SPARSITY+1):
+      for j in range(-SPARSITY, SPARSITY+1):
+        y = self.__get_height(x+i, z+j)
+        # Check if 3x3 grid is available
+        if i in range(-1, 2) and j in range(-1, 2):  # 3x3 grid
+          if not self.level.blockAt(x+i, y, z+j) == ROAD[0]:
+            return False
+        # Check for nearby street lights
+        if self.level.blockAt(x+i, y+1, z+j) == POLE[0]:
+          return False
+    return True
+
+
+  # Place a street light at (x, z)
+  def __place_street_light(self, x, z):
+    y = self.__get_height(x, z)
+    for i in range(LEN_POLE):
+      utility.setBlock(self.level, POLE, x, y+i+1, z)
+    utility.setBlock(self.level, (123,0), x, y+LEN_POLE+1, z)  # Redstone light
+    utility.setBlock(self.level, (151,0), x, y+LEN_POLE+2, z)  # Daylight sensor  (NOTE: if not working -> (178,0))
+
+
+  # Generate street lights with redstone lamp + light sensor
+  # They automatically turn on when it is dark
+  def __generate_street_light(self, outer_r):
+    for r in range(1, outer_r):
+      for alpha in range(0, 360):
+        x = int(self.x_origin + r * math.cos(math.pi*alpha/180))
+        z = int(self.z_origin + r * math.sin(math.pi*alpha/180))
+        if self.__street_light(x, z):
+          self.__place_street_light(x, z)
+          alpha += 20  # Make sure there is enough space between street lights
+
+
   # Generates the settlement
   def generate(self):
     # Radius of outer and inner circles, forming the gear-shape 
@@ -295,6 +343,8 @@ class Settlement:
 
     self.__place_plots(outer_r)  # Generate random plots for the buildings
     self.__generate_buildings()
+
+    self.__generate_street_light(outer_r)  # Generate street lights
 
 
 # Starting point of generating the beautiful settlement

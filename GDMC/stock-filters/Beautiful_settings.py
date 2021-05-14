@@ -34,8 +34,14 @@ P_PLOT = 0.7  # Probability to place plot when it is available
 CANAL_VALUE = 100  # Added value to direct the buildings nearby a canal to it
 
 
+# ==== Street light specific ====
+LEN_POLE = 4    # Length of street light pole
+SPARSITY = 9    # Area (NxN) where at most one street light can be
+
+
 # ==== Block-specifications (with the exception of the buildings) ====
 AIR = (0,0)
 WATER = (9,0)
 ROAD = (13,0)
 OUTER_WALL = (35,14)
+POLE = (139,0)  # Cobblestone wall
