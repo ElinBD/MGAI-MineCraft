@@ -146,6 +146,14 @@ class Settlement:
     return count
 
 
+  # Place wall, starting at (x,y,z)
+  def __place_wall(self, x, y, z):
+    L = LEN_WALL + 1 if random.uniform(0,1) >= 0.5 else LEN_WALL
+    utility.setBlock(self.level, AIR, x, y+LEN_WALL+1, z)
+    for l in range(L):
+      utility.setBlock(self.level, OUTER_WALL, x, y+l, z)
+    
+
   # Generates the foundation of the settlement and adds walls surrounding it
   # Outer_r is necessary to know how far to look
   def __foundation_and_walls(self, outer_r):
@@ -164,8 +172,9 @@ class Settlement:
           for j in range(-1, 2):
             y = self.__get_height(x+i, z+j)
             if not self.level.blockAt(x+i, y, z+j) == WATER[0]:
-              if self.__count_water(x+i, z+j) > 0:  # Create wall
-                utility.setBlock(self.level, OUTER_WALL, x+i, y, z+j)  # TODO
+              if self.__count_water(x+i, z+j) > 0 and not self.level.blockAt(x+i, y, z+j) == OUTER_WALL[0]:  # Create wall at (x+i,z+j)
+                utility.setBlock(self.level, OUTER_WALL, x+i, y+1, z+j)
+                #self.__place_wall(x+i, y, z+j)
               else:  # Foundation floor
                 utility.setBlock(self.level, ROAD, x+i, y, z+j)
 
@@ -190,18 +199,18 @@ class Settlement:
     P1_x, P1_y, P1_z = building[0][0], building[0][1], building[0][2]
     length, width = building[1][0], building[1][1]
 
-    space = np.zeros(4, dtype=int)
+    space = np.zeros(4, dtype=int)  # Four counters, for each direction
     indices = range(4)
 
     for x in range(P1_x-3, P1_x+length+3):
-      for z in range(P1_z-3, P1_x+width+3):
+      for z in range(P1_z-3, P1_z+width+3):
         y = self.__get_height(x, z)
         block = self.level.blockAt(x, y, z)
         if not P1_x <= x < P1_x+length:
           if x < P1_x and (block == ROAD[0] or block == WATER[0]):  # EAST
             space[0] += 1
             if block == WATER[0]:  # Point towards canal
-              space[1] += CANAL_VALUE
+              space[0] += CANAL_VALUE
           elif x > P1_x+length-1 and (block == ROAD[0] or block == WATER[0]):  # WEST
             space[3] += 1
             if block == WATER[0]:  # Point towards canal
@@ -214,7 +223,7 @@ class Settlement:
           elif z > P1_z+width-1 and (block == ROAD[0] or block == WATER[0]):  # NORTH
             space[1] += 1
             if block == WATER[0]:  # Point towards canal
-              space[0] += CANAL_VALUE
+              space[1] += CANAL_VALUE
     
     # If multiple indices have max value, shuffle indices and space with same seed
     R = random.randint(0, 10000)  # Create random seed
@@ -237,19 +246,19 @@ class Settlement:
       if i == 0:    # WEST
         for z in range(0, width):
           y = self.__get_height(P1_x, P1_z+z)
-          utility.setBlock(self.level, (57,0), P1_x, 3, P1_z+z)
+          utility.setBlock(self.level, (57,0), P1_x, y, P1_z+z)
       elif i == 1:  # SOUTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z+width+1)
-          utility.setBlock(self.level, (57,0), P1_x+x, 3, P1_z+width-1)
+          utility.setBlock(self.level, (57,0), P1_x+x, y, P1_z+width-1)
       elif i == 2:  # NORTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z)
-          utility.setBlock(self.level, (57,0), P1_x+x, 3, P1_z)
+          utility.setBlock(self.level, (57,0), P1_x+x, y, P1_z)
       elif i == 3:  # EAST
         for z in range(0, width):
           y = self.__get_height(P1_x+length-1, P1_z+z)
-          utility.setBlock(self.level, (57,0), P1_x+length-1, 3, P1_z+z)
+          utility.setBlock(self.level, (57,0), P1_x+length-1, y, P1_z+z)
       # ==================================================================
       
       # Convert i to correct format for building
@@ -276,7 +285,7 @@ class Settlement:
       for x in range(-1*outer_r, outer_r, 1):
         length_plot = random.randint(MIN_LENGTH, MAX_LENGTH)
         if self.__available((x-1, z-1), (x+length_plot+1, z+width_plot+1)):
-          if random.uniform(0,1) <= P_PLOT:
+          if random.uniform(0,1) <= P_PLOT:  # Probability to create plot
             y = self.__get_height(x,z)
             # TODO: remove when done? OR EASTER EGG -> diamond foundation
             for i in range(x, x+length_plot):  # Mark plot

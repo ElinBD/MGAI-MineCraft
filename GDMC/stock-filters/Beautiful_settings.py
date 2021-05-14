@@ -39,9 +39,14 @@ LEN_POLE = 4    # Length of street light pole
 SPARSITY = 9    # Area (NxN) where at most one street light can be
 
 
+# ==== Outer wall specific ====
+LEN_WALL = 7
+
+
 # ==== Block-specifications (with the exception of the buildings) ====
 AIR = (0,0)
 WATER = (9,0)
-ROAD = (13,0)
-OUTER_WALL = (35,14)
-POLE = (139,0)  # Cobblestone wall
+ROAD = (45,0)             # Bricks
+OUTER_WALL = (98,0)       # Stone bricks
+POLE = (139,0)            # Cobblestone wall
+WATER_GATE = (101, 0)     # Iron bars
