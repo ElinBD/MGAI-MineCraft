@@ -3,13 +3,15 @@ from pymclevel.biome_types import biome_types
 from pymclevel.box import BoundingBox
 from pymclevel import biome_types
 
+
 inputs = (
     ("Get color palets based on a given box", "label"),
     ("Creator: Elin", "label")
 )
 
-stairs = [(53, 0), (67, 0), (108, 0), (109, 0), (128, 0), (134, 0), (135, 0), (136, 0),
-                (156, 0), (163, 0), (164, 0), (203, 0)]
+stairs = [(53, 0), (67, 0), (108, 0), (109, 0), (128, 0),
+          (134, 0), (135, 0), (136, 0),
+          (156, 0), (163, 0), (164, 0), (203, 0)]
 # alphaMaterials.WoodenStairs = alphaMaterials[53, 0]
 # alphaMaterials.StoneStairs = alphaMaterials[67, 0]
 # alphaMaterials.BrickStairs = alphaMaterials[108, 0]
@@ -76,7 +78,23 @@ floors = [(70, 0), (72, 0)]
 # alphaMaterials.StoneFloorPlate = alphaMaterials[70, 0]
 # alphaMaterials.WoodFloorPlate = alphaMaterials[72, 0]
 
-walls = []
+walls = [(1,0)]
+
+# alphaMaterials.Stone = alphaMaterials[1, 0]
+# alphaMaterials.Grass = alphaMaterials[2, 0]
+# alphaMaterials.Dirt = alphaMaterials[3, 0]
+# alphaMaterials.Cobblestone = alphaMaterials[4, 0]
+# alphaMaterials.WoodPlanks = alphaMaterials[5, 0]
+# alphaMaterials.Sapling = alphaMaterials[6, 0]
+# alphaMaterials.SpruceSapling = alphaMaterials[6, 1]
+# alphaMaterials.BirchSapling = alphaMaterials[6, 2]
+# alphaMaterials.Bedrock = alphaMaterials[7, 0]
+# alphaMaterials.WaterActive = alphaMaterials[8, 0]
+# alphaMaterials.Water = alphaMaterials[9, 0]
+# alphaMaterials.LavaActive = alphaMaterials[10, 0]
+# alphaMaterials.Lava = alphaMaterials[11, 0]
+# alphaMaterials.Sand = alphaMaterials[12, 0]
+
 
 blocks_dict = {8: 'NL',
                12: 'desert'}
@@ -127,4 +145,4 @@ def perform(level, box, options):
     palet_ranges = color_palets[landscape_type]
     palet = sample_palet(palet_ranges)
 
-    return palet
+    print(palet)
