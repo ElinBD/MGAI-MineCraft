@@ -2,7 +2,7 @@ from Beautiful_meta_analysis import get_block_type_counts, get_biom_type_counts
 from pymclevel.biome_types import biome_types
 from pymclevel.box import BoundingBox
 from pymclevel import biome_types
-
+import random
 
 inputs = (
     ("Get color palets based on a given box", "label"),
@@ -96,13 +96,14 @@ walls = [(1,0)]
 # alphaMaterials.Sand = alphaMaterials[12, 0]
 
 
-blocks_dict = {8: 'NL',
+blocks_dict = {2: 'NL',
+               8: 'NL',
                12: 'desert'}
 
 bioms_dict = {6: 'NL',
                2: 'desert'}
 
-color_palets = {'NL': {'Wall': walls,
+color_palets = {'NL': {'wall': walls,
                 'staircase': stairs,
                 'rooftop staircase': stairs,
                 # 'pilar': pillars,
@@ -116,33 +117,32 @@ color_palets = {'NL': {'Wall': walls,
                 }
 
 def get_most_frequent_block(block_types):
-    block_types.pop(0)
-    print(block_types)
+    if 0 in block_types.keys():
+        block_types.pop(0)
     return max(block_types, key=block_types.get)
 
 def sample_palet(col_pal):
     sampled_palet = {}
     for key, value in col_pal.items():
-        sample_palet[key] = value.sample()
+        sampled_palet[key] = random.sample(value, 1)[0]
 
-    return sample_palet
+    return sampled_palet
 
-def perform(level, box, options):
+def get_color_palet(level, box, options):
     # biom_types = get_biom_type_counts(level, box, options)
     block_types = get_block_type_counts(level, box, options)
     # print 'Biom types:'
     # print biom_types
 
     most_freq_block_type = get_most_frequent_block(block_types)
-    print(most_freq_block_type)
 
     # most_freq_biom_type = get_most_frequent_block(biom_types))
     # print(most_freq_biom_type)
 
-    landscape_type = blocks_dict[most_freq_block_type]
+    landscape_type = blocks_dict.get(most_freq_block_type, 'NL')
     # landscape_biom = bioms_dict[most_freq_block_type]
 
     palet_ranges = color_palets[landscape_type]
     palet = sample_palet(palet_ranges)
 
-    print(palet)
+    return palet
