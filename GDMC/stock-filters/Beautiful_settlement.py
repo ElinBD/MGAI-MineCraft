@@ -7,6 +7,9 @@ import math
 
 from Beautiful_settings import *
 
+from Beautiful_meta_analysis import get_height_map, get_biome_map, get_surface_type_map
+from Beautiful_starting_point import find_starting_point
+from Beautiful_terraforming import flatten_box
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
@@ -31,25 +34,51 @@ class Settlement:
 
     self.box_origin_height = self.box.origin[1]  # Height of origin block in box
 
-    # Centerpoint of settlement
-    self.origin = (0,3,0)  # TODO
-    self.x_origin = self.origin[0]
-    self.y_origin = self.origin[1]
-    self.z_origin = self.origin[2]
+    self.height_map = get_height_map(self.level, self.box)  # Relative height map of given box
+    self.biome_map = get_biome_map(self.level, self.box)
+    self.surface_map = get_surface_type_map(self.level, self.box)
 
-    # Relative height map of given box
-    self.height_map = np.zeros((box.size[0], box.size[2]), dtype=int) # TODO
+    # Centerpoint of settlement
+    try:
+      self.origin = find_starting_point(self.box, "disk", 25, self.height_map, self.surface_map, self.biome_map)
+    except ValueError:
+      self.origin = find_starting_point(self.box, "disk", 25, self.height_map, self.surface_map, self.biome_map, plains=False)
+
+    self.x_origin = self.origin[0] - self.box.minx
+    self.z_origin = self.origin[1] - self.box.minz
+
+    print(self.x_origin, self.z_origin)
+    self.y_origin = self.__get_height(self.x_origin, self.z_origin)
+
+    self.box_x = self.origin[0]
+    self.box_z = self.origin[1]
+    self.box_y = self.y_origin + self.box.miny
 
     # Meta information
     self.buildings = []  # Plots of the buildings
+
+
+  # Check whether given (x,z) is in the map
+  def __on_map(self, x, z):
+    print(x, z)
+    print(not (0 <= x and x < self.height_map.shape[0]))
+    print(not (0 <= z and z < self.height_map.shape[1]))
+    print("==================")
+    if not (0 <= x and x < self.height_map.shape[0]):
+      return False
+    if not (0 <= z and z < self.height_map.shape[1]):
+      return False
+    return True
 
 
   # Place a grid of 3x3 blocks at given (x,z)
   def __place_grid(self, block, x, z, y_offset):
     for i in range(-1, 2):
       for j in range(-1, 2):
-        y = self.__get_height(x+i, z+j) + y_offset
-        utility.setBlock(self.level, block, x+i, y, z+j)
+        if self.__on_map(x+i, z+j):
+          y = self.__get_height(x+i, z+j) + y_offset
+          utility.setBlock(self.level, block, x+i+self.box.minx, y+self.box.miny, z+j+self.box.minz)
+          print(x+i+self.box.minx, y+self.box.miny, z+j+self.box.minz)
 
 
   # Get absolute height at point (x,z)
@@ -143,9 +172,10 @@ class Settlement:
       for j in range(-2, 3):
         if i == 0 and j == 0:
           continue
-        y = self.__get_height(x+i, z+j)
-        if self.level.blockAt(x+i, y, z+j) == WATER[0]:
-          count += 1
+        if self.__on_map(x+i, z+j):
+          y = self.__get_height(x+i, z+j)
+          if self.level.blockAt(x+i, y, z+j) == WATER[0]:
+            count += 1
     return count
 
 
@@ -153,8 +183,8 @@ class Settlement:
   def __place_wall(self, x, y, z):
     L = LEN_WALL + 1 if random.uniform(0,1) >= 0.5 else LEN_WALL
     for l in range(L):
-      utility.setBlock(self.level, OUTER_WALL, x, y+l, z)
-    utility.setBlock(self.level, AIR, x, y+LEN_WALL+1, z)
+      utility.setBlock(self.level, OUTER_WALL, x+self.box.minx, y+l+self.box.miny, z+self.box.minz)
+    utility.setBlock(self.level, AIR, x+self.box.minx, y+LEN_WALL+1+self.box.miny, z+self.box.minz)
     
 
   # Generates the foundation of the settlement and adds walls surrounding it
@@ -173,12 +203,14 @@ class Settlement:
         # Manual placement of 3x3 grid
         for i in range(-1, 2):
           for j in range(-1, 2):
+            if not self.__on_map(x+i, z+j):
+              continue
             y = self.__get_height(x+i, z+j)
             if not self.level.blockAt(x+i, y, z+j) == WATER[0]:
               if self.__count_water(x+i, z+j) > 0 and not self.level.blockAt(x+i, y, z+j) == OUTER_WALL[0]:  # Create wall at (x+i,z+j)
                 self.__place_wall(x+i, y, z+j)
               else:  # Foundation floor
-                utility.setBlock(self.level, ROAD, x+i, y, z+j)
+                utility.setBlock(self.level, ROAD, x+i+self.box.minx, y+self.box.miny, z+j+self.box.minz)
 
         if self.level.blockAt(x, self.__get_height(x, z), z) == WATER[0]:
           max_radius[alpha] = r  # Inner ring found for current alpha, update max_radius
@@ -208,6 +240,8 @@ class Settlement:
 
     for x in range(P1_x-3, P1_x+length+3):
       for z in range(P1_z-3, P1_z+width+3):
+        if not self.__on_map(x, z):
+          continue
         y = self.__get_height(x, z)
         block = self.level.blockAt(x, y, z)
         if not P1_x <= x < P1_x+length:
@@ -250,19 +284,19 @@ class Settlement:
       if i == 0:    # WEST
         for z in range(0, width):
           y = self.__get_height(P1_x, P1_z+z)
-          utility.setBlock(self.level, (57,0), P1_x, y, P1_z+z)
+          utility.setBlock(self.level, (57,0), P1_x+self.box.minx, y+self.box.miny, P1_z+z+self.box.minz)
       elif i == 1:  # SOUTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z+width+1)
-          utility.setBlock(self.level, (57,0), P1_x+x, y, P1_z+width-1)
+          utility.setBlock(self.level, (57,0), P1_x+x+self.box.minx, y+self.box.miny, P1_z+width-1+self.box.minz)
       elif i == 2:  # NORTH
         for x in range(0, length):
           y = self.__get_height(P1_x+x, P1_z)
-          utility.setBlock(self.level, (57,0), P1_x+x, y, P1_z)
+          utility.setBlock(self.level, (57,0), P1_x+x+self.box.minx, y+self.box.miny, P1_z+self.box.minz)
       elif i == 3:  # EAST
         for z in range(0, width):
           y = self.__get_height(P1_x+length-1, P1_z+z)
-          utility.setBlock(self.level, (57,0), P1_x+length-1, y, P1_z+z)
+          utility.setBlock(self.level, (57,0), P1_x+length-1+self.box.minx, y+self.box.miny, P1_z+z+self.box.minz)
       # ==================================================================
       
       # Convert i to correct format for building
@@ -287,6 +321,8 @@ class Settlement:
     for z in range(-1*outer_r, outer_r, 2):
       width_plot = random.randint(MIN_WIDTH, MAX_WIDTH)
       for x in range(-1*outer_r, outer_r, 1):
+        if not self.__on_map(x, z):
+          continue
         length_plot = random.randint(MIN_LENGTH, MAX_LENGTH)
         if self.__available((x-1, z-1), (x+length_plot+1, z+width_plot+1)):
           if random.uniform(0,1) <= P_PLOT:  # Probability to create plot
@@ -294,7 +330,7 @@ class Settlement:
             # TODO: remove when done? OR EASTER EGG -> diamond foundation
             for i in range(x, x+length_plot):  # Mark plot
               for j in range(z, z+width_plot):
-                utility.setBlock(self.level, (35,12), i, self.__get_height(i,j), j)
+                utility.setBlock(self.level, (35,12), i+self.box.minx, self.__get_height(i,j)+self.box.miny, j+self.box.minz)
             # ===========================================================
             temp.append( [(x, y, z), (length_plot, width_plot)] )
     
@@ -313,6 +349,8 @@ class Settlement:
   def __street_light(self, x, z):
     for i in range(-SPARSITY, SPARSITY+1):
       for j in range(-SPARSITY, SPARSITY+1):
+        if not self.__on_map(x+i, z+j):
+          continue
         y = self.__get_height(x+i, z+j)
 
         # Check if 3x3 grid is available
@@ -332,9 +370,9 @@ class Settlement:
   def __place_street_light(self, x, z):
     y = self.__get_height(x, z)
     for i in range(LEN_POLE):
-      utility.setBlock(self.level, POLE, x, y+i+1, z)
-    utility.setBlock(self.level, (123,0), x, y+LEN_POLE+1, z)  # Redstone light
-    utility.setBlock(self.level, (151,0), x, y+LEN_POLE+2, z)  # Daylight sensor  (NOTE: if not working -> (178,0))
+      utility.setBlock(self.level, POLE, x+self.box.minx, y+i+1+self.box.miny, z+self.box.minz)
+    utility.setBlock(self.level, (123,0), x+self.box.minx, y+LEN_POLE+1+self.box.miny, z+self.box.minz)  # Redstone light
+    utility.setBlock(self.level, (151,0), x+self.box.minx, y+LEN_POLE+2+self.box.miny, z+self.box.minz)  # Daylight sensor  (NOTE: if not working -> (178,0))
 
 
   # Generate street lights with redstone lamp + light sensor
@@ -352,7 +390,7 @@ class Settlement:
   # Generates the settlement
   def generate(self):
     # Radius of outer and inner circles, forming the gear-shape 
-    outer_r, inner_r = random.randint(MIN_OUTER, MAX_OUTER), random.randint(MIN_INNER, MAX_INNER)
+    outer_r, inner_r = random.randint(MIN_OUTER, MAX_OUTER), random.randint(MIN_INNER, MAX_INNER) # TODO
 
     P0, P1, P2 = self.__generate_canals(outer_r, inner_r)  # Canals surrounding the settlement
     self.__foundation_and_walls(outer_r)  # Foundation of settlement + walls
