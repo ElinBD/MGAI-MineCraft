@@ -1,11 +1,10 @@
 from __future__ import division
 
-import itertools
 import numpy as np
 import utilityFunctions as utilityFunctions
 
 from Beautiful_meta_analysis import get_height_map, get_surface_type_map, get_biome_map
-from skimage.filters.rank import modal, gradient, gradient_percentile, maximum
+from skimage.filters.rank import modal, gradient, gradient_percentile, maximum, percentile
 from skimage.morphology import (square, rectangle, diamond, disk,
                                 octagon, star)
 
@@ -19,15 +18,35 @@ inputs = (
 )
 
 
-def find_starting_point(height_map, surface_type_map, biome_map, box, level, area, offset, plains = True):
+def find_starting_point(box, shape, size, height_map, surface_type_map, biome_map, plains = True, size_2 = False):
+
+    if shape == 'square':
+        area = square(size)
+        offset = int(size/2)
+
+    if shape == 'rectangle':
+        area =  rectangle(size,size_2)
+        offset = int((max(size, size_2))/2)
+    if shape == 'disk':
+        area = disk(size)
+        offset = int(size)
+    if shape == 'diamond':
+        area = diamond(size)
+        offset = int(size)
+
+
+    if (box.size[0] <= 2*offset) or (box.size[2] <= 2*offset):
+        print('box smaller than area')
+        return
 
     excl_perc = 0
     gradient_map = gradient(height_map.astype('uint8'), area)
 
     surface_type_map[surface_type_map == 9] = surface_type_map[surface_type_map == 9] + 100
-    surface_max_map = maximum(surface_type_map, area)
+    surface_max_map = percentile(surface_type_map, area, p0 = 0.9)
     if plains:
         biome_maj_map = modal(biome_map, area)
+
 
 
     #increase value of centres of areas that include water to avoid selecting them
@@ -57,7 +76,10 @@ def find_starting_point(height_map, surface_type_map, biome_map, box, level, are
                     elev, excl_perc))
             print('{} candidate(s) found'.format(len(candidates[0])))
 
-            return(candidates)
+            index = np.random.randint(len(candidates[0]))
+            cand = (box.minx+offset+candidates[0][index], box.minx+offset+candidates[1][index])
+
+            return(cand)
 
 
 
@@ -87,39 +109,38 @@ def find_starting_point(height_map, surface_type_map, biome_map, box, level, are
         print('no perfectly flat area of given size in box, area with no elevation excluding {} percent of area chosen instead'.format(excl_perc))
 
     print('{} candidate(s) found'.format(len(candidates[0])))
-    return (candidates)
+
+    index = np.random.randint(len(candidates[0]))
+    cand = (box.minx + offset + candidates[0][index], box.minz + offset + candidates[1][index])
+    return (cand)
+
 
 
 def perform(level, box, options):
     shape = options["shape (0=square, 1=rectangle, 2=disk, 3=diamond"]
     size = options["size_1"]
-
+    size_2 = False
 
     if shape == 0:
-        area = square(size)
-        offset = int(size/2)
+        shape = 'square'
+
     if shape == 1:
         size_2 = options['size_2 (only applicable for rectangle)']
-        area =  rectangle(size,size_2)
-        offset = int((max(size, size_2))/2)
-    if shape == 2:
-        area = disk(size)
-        offset = int(size)
-    if shape == 3:
-        area = diamond(size)
-        offset = int(size)
+        shape =  'rectangle'
 
-    if (box.size[0] <= 2*offset) or (box.size[2] <= 2*offset):
-        print('box smaller than area')
-        return
+    if shape == 2:
+        shape = 'disk'
+
+    if shape == 3:
+        shape = 'diamond'
+
 
     height_map = get_height_map(level, box)
     surface_type_map = get_surface_type_map(level, box)
     biome_map = get_biome_map(level, box)
 
-    candidates = find_starting_point(height_map, surface_type_map, biome_map, box, level, area = area, offset = offset,
-                                     plains = True)
-    index = np.random.randint(len(candidates[0]))
+    cand = find_starting_point(box, shape, size, height_map, surface_type_map, biome_map, plains = True, size_2 = size_2)
+    print(cand)
 
     for i in range(0, 100):
-       utilityFunctions.setBlock(level, (4, 0), box.minx+offset+candidates[0][index], i, box.minz+offset+candidates[1][index])
+       utilityFunctions.setBlock(level, (4, 0), cand[0], i, cand[1])
