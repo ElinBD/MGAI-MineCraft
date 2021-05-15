@@ -51,6 +51,7 @@ class Settlement:
     # Meta information
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
+    self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
 
 
   # Check whether given (x,z) is in the box
@@ -70,6 +71,13 @@ class Settlement:
     world_z = z + self.box.minz
 
     utility.setBlock(self.level, block, world_x, world_y, world_z)  # Place block
+  
+  
+  # Given box-coordinates (x,z), place block on top
+  def __place_block_on_top(self, block, x, z):
+    for y in range(self.box.maxy, self.box.miny):
+      if not self.__get_block(x, y, z) == AIR[0]:
+        self.__place_block(block, x, y+1, z)
 
 
   # Place a grid of 3x3 blocks at given (x,z)
@@ -106,18 +114,48 @@ class Settlement:
     return block  # Should never come here
 
 
+  # Update the water-np-array
+  def __update_water(self, x, z):
+    for i in range(-1, 2):
+      for j in range(-1, 2):
+        if self.__in_box(x+i, z+j):
+          self.water[x+i][z+j] = True   # Update where the canals are located
+
+
+  # Flatten area where the settlement will be
+  def __flatten(self, outer_r):
+    y_level = self.__get_height(self.x_center_box, self.z_center_box)
+    for r in range(1, outer_r+1):
+      for alpha in range(0,360):
+        x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+        z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+        
+        for i in range(-1, 2):
+          for j in range(-1, 2):
+            if not self.__in_box(x+i, z+j):
+              continue
+            for y in range(self.box.miny, self.box.maxy):
+              if y <= y_level:
+                self.__place_block(GRASS, x+i, y, z+j)
+              else:
+                self.__place_block(AIR, x+i, y, z+j)
+            
+            self.height_map[x+i][z+j] = y_level - self.box_origin_height  # Update height map due to flattening
+
+
   # Generate canal from P0 to P1
   def __generate_canal(self, P0, P1):
     lst = utility.raytrace(P0, P1)
     for block in lst:
       self.__place_grid(WATER, block[0], block[2], 0)
       self.__place_grid(AIR, block[0], block[2], 1)
+      self.__update_water(block[0], block[2])
     
       y = self.__get_height(block[0], block[2])+2
       if self.__get_block(block[0], y, block[2]) == OUTER_WALL[0]:
         self.__place_grid(WATER_GATE, block[0], block[2], 2)
-        
 
+        
   # Generate inner canals from P1 and P2 to center, then to P0
   def __generate_inner_canals(self, P0, P1, P2):
     cross_x = self.x_center_box+random.randint(-OFFSET_CROSSPOINT, OFFSET_CROSSPOINT)
@@ -160,11 +198,14 @@ class Settlement:
         lst = utility.raytrace((x_outer, y_outer, z_outer), (x_inner, y_inner, z_inner))
         for block in lst:
           self.__place_grid(WATER, block[0], block[2], 0)
+          self.__update_water(block[0], block[2])
       
       if outer:
         self.__place_grid(WATER, x_outer, z_outer, 0)
+        self.__update_water(x_outer, z_outer)
       else:
         self.__place_grid(WATER, x_inner, z_inner, 0)
+        self.__update_water(x_inner, z_inner)
 
       # Record points from which there will be canals within the gear shape
       if alpha == R0:
@@ -181,9 +222,10 @@ class Settlement:
       lst = utility.raytrace((x_outer, y_outer, z_outer), (x_inner, y_inner, z_inner))
       for block in lst:
         self.__place_grid(WATER, block[0], block[2], 0)
+        self.__update_water(block[0], block[2])
 
     return P0, P1, P2
-  
+
 
   # Count number of water blocks surrounding the given coordinates
   # Grid: 5x5
@@ -408,19 +450,49 @@ class Settlement:
           alpha += 20  # Make sure there is enough space between street lights
 
 
+  # Lower water level by one block to make it lower that the roads
+  def __lower_water_level(self, outer_r):
+    for x in range(self.water.shape[0]):
+      for z in range(self.water.shape[1]):
+        if self.water[x][z]:  # Canal location
+          y = self.__get_height(x, z)
+          self.__place_block(AIR, x, y, z)      # Remove water block
+          self.__place_block(WATER, x, y-1, z)  # Place water block one lower
+          self.height_map[x][z] -= 1
+
+
   # Generates the settlement
   def generate(self):
     # Radius of outer and inner circles, forming the gear-shape 
     outer_r, inner_r = random.randint(MIN_OUTER, MAX_OUTER), random.randint(MIN_INNER, MAX_INNER) # TODO
 
+    print "\n==== Start generating the beautiful settlement! ===="
+
+    print "Flatten area within the outer canals.."
+    self.__flatten(outer_r)  # Flatten area within outer canals -> every block becomes a grass block
+
+    print "Generating the outer canals.."
     P0, P1, P2 = self.__generate_canals(outer_r, inner_r)  # Canals surrounding the settlement
+
+    print "Generating foundation and outer walls.."
     self.__foundation_and_walls(outer_r)  # Foundation of settlement + walls
+
+    print "Generating inner canals.."
     self.__generate_inner_canals(P0, P1, P2)  # Three inner canals
 
+    print "Generating plots for the buildings.."
     self.__place_plots(outer_r)  # Generate random plots for the buildings
+
+    print "Generating buildings.."
     self.__generate_buildings()
 
+    print "Generating street lights.."
     self.__generate_street_light(outer_r)  # Generate street lights
+
+    print "Lower water level.."
+    self.__lower_water_level(outer_r)  # Lower water level by one block
+
+    print "\nGeneration completed!"
 
 
 # Starting point of generating the beautiful settlement
