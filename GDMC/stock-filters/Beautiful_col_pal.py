@@ -19,7 +19,7 @@ ranges_dict = {8: 'NL',
 #                       'roof':  },
 #                'field': {'wall': ,
 #                       'roof':  }
-                }
+
 
 
 def get_most_frequent_block(block_types):
