@@ -17,8 +17,8 @@ P_SWITCH = 0.4  # Probability to switch between inner and outer, when MIN_LENGTH
 OFFSET_CROSSPOINT = 5  # Maximum offset of the crosspoint of the three inner canals
 
 # Radius of the outer and inner circles, forming the gear-shape
-MIN_OUTER = 20
-MAX_OUTER = 25
+MIN_OUTER = 40
+MAX_OUTER = 45
 MIN_INNER = MIN_OUTER - 8
 MAX_INNER = MIN_OUTER - 5
 
@@ -50,3 +50,4 @@ ROAD = (45,0)             # Bricks
 OUTER_WALL = (98,0)       # Stone bricks
 POLE = (139,0)            # Cobblestone wall
 WATER_GATE = (101, 0)     # Iron bars
+DIAMOND = (57,0)
