@@ -77,7 +77,7 @@ def find_starting_point(box, shape, size, height_map, surface_type_map, biome_ma
             print('{} candidate(s) found'.format(len(candidates[0])))
 
             index = np.random.randint(len(candidates[0]))
-            cand = (box.minx+offset+candidates[0][index], box.minx+offset+candidates[1][index])
+            cand = (box.minx+offset+candidates[0][index], box.minz+offset+candidates[1][index])
 
             return(cand)
 
