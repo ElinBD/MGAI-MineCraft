@@ -48,16 +48,21 @@ def large_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, ba
     y_r = base_y+height_y+1
     for x in range(base_x, x_center):
         utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.quartz_slab, x, y_r+1, base_z)
         y_r += 1
     y_r = base_y+height_y+1
     for x in range(base_x + length_x - 1, x_west, -1):
         utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.quartz_slab, x, y_r+1, base_z)
         y_r += 1
 
     if length_x%2 != 0: # Building has an uneven with. Random chance to place another block in the middle on top
         extra_top = random.randint(0, 1)
         if extra_top:
             utilityFunctions.setBlock(level, pallete.wall, x_center, y_r, base_z)
+            utilityFunctions.setBlock(level, pallete.quartz_slab, x_center, y_r+1, base_z)
+        else:
+            utilityFunctions.setBlock(level, pallete.quartz_slab, x_center, y_r, base_z)
 
 def clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
@@ -98,29 +103,31 @@ def clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, b
 def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
-    # Heightening the facade...
-    for x in range(0, length_x):
-        utilityFunctions.setBlock(level, pallete.wall, x, base_y+height_y, base_z)
 
-    y_r = base_y+height_y
+    # Heightening the facade and replacing blocks with facade type...
+    y_r = base_y+height_y+1
     for x in range(base_x, x_center):
-        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
+        for y in range(base_y+height_y, y_r):
+            utilityFunctions.setBlock(level, pallete.wall, x, y, base_z)
         y_r += 1
 
     if length_x % 2 != 0:
-        utilityFunctions.setBlock(level, pallete.wall, x_center, y_r-1, base_z)
-        utilityFunctions.setBlock(level, pallete.wall, x_center, y_r, base_z)
+        for y in range(base_y+height_y, y_r):
+            utilityFunctions.setBlock(level, pallete.wall, x_center, y, base_z)
 
-    y_r = base_y+height_y
+    y_r = base_y+height_y+1
     for x in range(base_x + length_x - 1, x_west, -1):
-        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
+        for y in range(base_y+height_y, y_r):
+            utilityFunctions.setBlock(level, pallete.wall, x, y, base_z)
         y_r += 1
+
 
     # Roof types. Roof type 0 is just doing nothing: small staircase facade.
     if facade_type == 0: # Small staircase facade
         small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z)
 
     elif facade_type == 1: # Large staircase facade
+        pass
         large_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z)
 
     elif facade_type == 2: # Lit. translation: clock/neck type facade
@@ -235,7 +242,7 @@ def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, bas
             utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z)
             utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z + length_z - 1)
         y_r += 1
-        
+
     if length_x % 2 != 0:
         for y in range(base_y+height_y, y_r):
             utilityFunctions.setBlock(level, pallete.roof_block, x_center, y, base_z)
@@ -329,9 +336,9 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
 #  @ box: selected box by mcedit
 #  @ options: user defined inputs from mcedit
 def build_house(length_x, height_y, length_z, no_floors, facade_type):
-    base_x = 0 
+    base_x = 0
     base_y = 1
-    base_z = 0 
+    base_z = 0
     tot_height = no_floors*height_y + length_x + 1 #/ 2 box too large is not really an issue...
     level = MCSchematic((length_x, tot_height, length_z))#working object
     box = bx.BoundingBox((0,0,0),(length_x, tot_height, length_z))
@@ -398,7 +405,7 @@ def place_house(og_level, length_x, height_y, length_z, base_x, base_y, base_z, 
         rot_box = bx.BoundingBox((0,0,0),(box.maxz-box.minz,box.maxy-box.miny,box.maxx-box.minx))
 
     for i in range(rotations):
-        scheme.rotateLeft()    
+        scheme.rotateLeft()
 
     og_level.copyBlocksFrom(scheme, rot_box, (base_x, base_y, base_z))
 
