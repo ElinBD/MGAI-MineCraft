@@ -126,7 +126,9 @@ class Settlement:
 
   # Flatten area where the settlement will be
   def __flatten(self, outer_r):
-    y_level = self.__get_height(self.x_center_box, self.z_center_box)
+    values, counts = np.unique(self.height_map.flatten(), return_counts=True)  # Compute mode
+    mode_height = values[np.argmax(counts)]
+    y_level = mode_height + self.box_origin_height  # Mode of height map
     for r in range(1, outer_r+1):
       for alpha in range(0,360):
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
@@ -372,8 +374,6 @@ class Settlement:
       # ==================================================================
       
       # Convert i to correct format for building
-      # Currently: NORTH = 2, EAST = 3, SOUTH = 1, WEST = 0
-      # Should be: NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3
       if i == 0:    # WEST
         i = 1
       elif i == 1:  # SOUTH
@@ -415,16 +415,12 @@ class Settlement:
 
   # Generate a building on top of each plot
   def __generate_buildings(self):
-    for building in self.buildings:#TODO talk to @Jerry when he is done with @Sem
+    for building in self.buildings:
       facade_type = random.randint(0, 3)
       if building.front % 2 == 0:
         place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
       else:
         place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
-      print("settlement i:", building.front)
-      #break
-      #pass
-      # TODO: generate(self.level, building.P, building.length, building.width, building.front)
 
 
   # Check whether a 3x3 grid is available and that there is no light
@@ -455,7 +451,7 @@ class Settlement:
     for i in range(LEN_POLE):
       self.__place_block(POLE, x, y+i+1, z)
     self.__place_block((123,0), x, y+LEN_POLE+1, z)  # Redstone light
-    self.__place_block((151,0), x, y+LEN_POLE+2, z)  # Daylight sensor  (NOTE: if not working -> (178,0))
+    self.__place_block((178,0), x, y+LEN_POLE+2, z)  # Daylight sensor
 
 
   # Generate street lights with redstone lamp + light sensor
