@@ -10,6 +10,7 @@ from Beautiful_settings import *
 from Beautiful_meta_analysis import get_height_map, get_biome_map, get_surface_type_map
 from Beautiful_starting_point import find_starting_point
 from Beautiful_terraforming import flatten_box
+from Beautiful_house import place_house
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
@@ -363,13 +364,13 @@ class Settlement:
       # Currently: NORTH = 2, EAST = 3, SOUTH = 1, WEST = 0
       # Should be: NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3
       if i == 0:    # WEST
-        i = 3
+        i = 1
       elif i == 1:  # SOUTH
         i = 2
       elif i == 2:  # NORTH
         i = 0
       else:         # EAST
-        i = 1
+        i = 3
 
       self.buildings.append(Building(building[0], width, length, i))  # Add new building
 
@@ -395,15 +396,19 @@ class Settlement:
             for i in range(x, x+width_plot):  # Mark plot
               for j in range(z, z+length_plot):
                 self.__place_block((35,12), i, self.__get_height(i,j), j)
-            temp.append( [(x, y, z), (width_plot, length_plot)] )
+            temp.append( [(x + self.box.minx, y - 1, z + self.box.minz), (width_plot, length_plot)] )
     
     self.__determine_front(temp)
   
 
   # Generate a building on top of each plot
   def __generate_buildings(self):
-    for building in self.buildings:
-      pass
+    for building in self.buildings:#TODO talk to @Jerry when he is done with @Sem
+      facade_type = random.randint(0, 3)
+      place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+      print("settlement i:", building.front)
+      break
+      #pass
       # TODO: generate(self.level, building.P, building.length, building.width, building.front)
 
 

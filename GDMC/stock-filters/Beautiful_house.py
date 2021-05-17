@@ -396,7 +396,7 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     return level, box
 
 
-def place_house(og_level, length_x, height_y, length_z, base_x, base_y, base_z, rotations, no_floors, facade_type):
+def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type):
     scheme, box = build_house(length_x, height_y, length_z, no_floors, facade_type)
 
     if rotations % 2 == 0:
@@ -405,9 +405,12 @@ def place_house(og_level, length_x, height_y, length_z, base_x, base_y, base_z, 
         rot_box = bx.BoundingBox((0,0,0),(box.maxz-box.minz,box.maxy-box.miny,box.maxx-box.minx))
 
     for i in range(rotations):
+        print("rotate")
         scheme.rotateLeft()
 
-    og_level.copyBlocksFrom(scheme, rot_box, (base_x, base_y, base_z))
+    og_level.copyBlocksFrom(scheme, rot_box, base)
+
+    print("place house at: ", base, " with orientation: ", rotations)
 
 def perform(level, box, options):
     height_y = options["height (y)"]
@@ -419,7 +422,7 @@ def perform(level, box, options):
     rotations = options["door location (N=0, W=1, S=2, E=3)"]
     no_floors = options["number of floors"]
     facade_type = options["facade type (small stairs=0, large stairs=1, bell=2, flat=3)"]
-    place_house(level, length_x, height_y, length_z, base_x, base_y, base_z, rotations, no_floors, facade_type)
+    place_house(level, length_x, height_y, length_z, (base_x, base_y, base_z), rotations, no_floors, facade_type)
 
 	#TODO: windows, roof and facade top (different styles)
 

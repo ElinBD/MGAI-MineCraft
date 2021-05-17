@@ -165,16 +165,16 @@ class Pallete():
             self.wall = (251, 12)
         elif rng_wall == 4:#orange
             self.wall = (251, 1)
-        elif rng_wall == 6:#gray bricks
+        elif rng_wall == 5:#gray bricks
             self.wall = (98, 0)
-        elif rng_wall == 7:#orange bricks
+        elif rng_wall == 6:#orange bricks
             self.wall = (45, 0)
 
-        self.wall = (45, 0)#FIXME hardcoded
+        #self.wall = (45, 0)#FIXME hardcoded
         self.pillar = self.wall#(251, 0)TODO if pillars == True...
 
         rng_plank = random.randint(0, 2)
-        print('plank = ', rng_plank)
+        #print('plank = ', rng_plank)
         if rng_plank == 0:#oak
             self.stair = 53
             self.floor = (5, 0)
@@ -186,7 +186,7 @@ class Pallete():
             self.floor = (5, 2)
 
         rng_door = random.randint(0, 4)
-        print('door = ', rng_door)
+        #print('door = ', rng_door)
         if rng_door == 0:#oakw
             self.door = 64
         elif rng_door == 1:#spruce
@@ -199,7 +199,7 @@ class Pallete():
             self.door = 197
 
         rng_roof = random.randint(0, 3)
-        print('roof = ', rng_roof)
+        #print('roof = ', rng_roof)
         if rng_roof == 0:#red bricks
             self.roof_stair = 108
             self.roof_block = (45, 0)
@@ -219,7 +219,7 @@ class Pallete():
 
         #self.decoration_slab #TODO add if nescassary TODO
         raam = random.randint(0, 2)
-        print('raam = ', raam)
+        #print('raam = ', raam)
         if raam == 0:#vanilla
             self.window = (120, 0)
         elif raam == 1:#gray
