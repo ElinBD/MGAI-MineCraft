@@ -115,7 +115,7 @@ def get_bridge_locations(level, box, doors):
     # placeholder for list of doors
     surfacemap = get_surface_type_map(level, box)
     doordummy = np.argwhere(surfacemap == 2)
-    idxs = np.random.randint(len(doordummy), size=2)
+    idxs = np.random.randint(len(doordummy), size=10)
     doors = doordummy[idxs]
 
     # evaluate initial population
@@ -151,9 +151,25 @@ def get_bridge_locations(level, box, doors):
 
         print("Best fitness found: ")
         print(best_fitness)
+        i+=1
 
     return sorted_candidates[0]
 
+def find_bridge_box(level, box, bridge):
+    return (bridge[0], 50, bridge[0])
+
+
+def place_bridges(level, box, doors):
+    bridge_coords = get_bridge_locations(level, box, doors)
+    
+    # split candidate in the 3 bridge locations
+    bridge_loca = np.split(bridge_coords, 3)
+    print(bridge_loca)
+    #for each bridge, calculcate the distance to each door
+    for bridge in range(len(bridge_loca)):
+        box_coords = find_bridge_box(level, box, bridge)
+        for (x,y,z) in box_coords:
+            utilityFunctions.setBlock(level, (1,0), x, y, z)
 
 def perform(level, box, options):
-    get_bridge_locations(level, box, [])
+    place_bridges(level, box, [])
