@@ -17,6 +17,9 @@ inputs = (
 	("Creators: Koen, Elin, Tim, Sem, Jerryyyyyyyy", "label")
 	)
 
+def partition(total, min_part, max_part):
+    partit = []#TODO
+    return partit
 
 # Stores data about one building
 class Building:
@@ -55,6 +58,7 @@ class Settlement:
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
     self.edge = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
+    self.doors = [] #list of all door locations
 
 
   # Check whether given (x,z) is in the box
@@ -456,13 +460,23 @@ class Settlement:
 
   # Generate a building on top of each plot
   def __generate_buildings(self):
-    return
     for building in self.buildings:
       facade_type = random.randint(0, 3)
-      if building.front % 2 == 0:
-        place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+      building.multiple = False        #FIXME
+      if building.multiple == True:
+        if building.width > building.length:
+          pass#TODO
+          
+        else:
+          pass#TODO
       else:
-        place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
+        if building.front % 2 == 0:
+          door = place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+        else:
+          door = place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
+      door[0] -= self.box.minx
+      door[1] -= self.box.minz
+      self.doors.append(door)
 
 
   # Check whether a 3x3 grid is available and that there is no light
