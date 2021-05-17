@@ -4,7 +4,7 @@
 # ==== Canal settings ====
 MIN_LENGTH_C = 30  # Min length of each section of the gear-like shape
 
-MAX_L_INNER = 10   # Angle between which the left inner canal should be
+MAX_L_INNER = 2   # Angle between which the left inner canal should be
 
 MIN_T_INNER = 200  # Angle between which the top inner canal should be
 MAX_T_INNER = 230
@@ -24,12 +24,23 @@ MAX_INNER = MIN_OUTER - 5
 
 
 # ==== Plot generation settings ====
-MIN_WIDTH = 4
-MAX_WIDTH = 8
-MIN_LENGTH = 4
-MAX_LENGTH = 8
+# PLOTS FOR ONE BUILDING
+MIN_WIDTH = 5
+MAX_WIDTH = 10
+MIN_LENGTH = 5
+MAX_LENGTH = 10
 
-P_PLOT = 0.7  # Probability to place plot when it is available
+P_PLOT = 0.6  # Probability to place plot when it is available
+
+
+# PLOTS FOR MULTIPLE BUILDINGS
+MIN_DEPTH = 7
+MAX_DEPTH = 7
+MIN_WIDTH_MULT = 20
+MAX_WIDTH_MULT = 35
+
+
+
 
 CANAL_VALUE = 100  # Added value to direct the buildings nearby a canal to it
 
