@@ -1,5 +1,6 @@
 import utilityFunctions as utilityFunctions
 from pymclevel import biome_types, schematic, MCSchematic, box as bx
+from Beautiful_Pallete import Pallete
 import random
 import math
 
@@ -20,45 +21,6 @@ inputs = (
     ("number of floors", (2, 1, 10)),
     ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3))
 )
-
-def east_west_roof(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
-    z_center = base_z + length_z/2
-    z_south = z_center - 1 if length_z % 2 == 0 else z_center
-    for x in range(base_x, base_x + length_x):
-        y = base_y+height_y
-        for z in range(base_z, z_center):
-            utilityFunctions.setBlock(level, (67,2), x, y, z)
-            y += 1
-        adjust = 0
-        if length_z % 2 != 0:
-            adjust = 1
-            utilityFunctions.setBlock(level, (4,0), x, y - 1, z_center)
-
-        y = base_y+height_y
-        for z in range(base_z + length_z - 1, z_south, -1):
-            utilityFunctions.setBlock(level, (67,3), x, y, z)
-            y += 1
-
-    y_r = base_y+height_y
-
-    for z in range(base_z, z_center):
-        for y in range(base_y+height_y, y_r):
-            utilityFunctions.setBlock(level, (4,0), base_x, y, z)
-            utilityFunctions.setBlock(level, (4,0), base_x + length_x - 1, y, z)
-        y_r += 1
-    adjust = 0
-    if length_z % 2 != 0:
-        adjust = 1
-        for y in range(base_y+height_y, y_r - 1):
-            utilityFunctions.setBlock(level, (4,0), base_x, y, z_center)
-            utilityFunctions.setBlock(level, (4,0), base_x + length_x - 1, y, z_center)
-
-    y_r = base_y+height_y
-    for z in range(base_z + length_z - 1, z_south, -1):
-        for y in range(base_y+height_y, y_r):
-            utilityFunctions.setBlock(level, (4,0), base_x, y, z)
-            utilityFunctions.setBlock(level, (4,0), base_x + length_x - 1, y, z)
-        y_r += 1
 
 
 def small_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
@@ -248,78 +210,79 @@ def windows_beta(level, box, length_x, height_y, length_z, base_x, temp_base_y, 
         y_r -=2
 
 
-def north_south_roof(level, box, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
+def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
     for z in range(base_z, base_z + length_z):
         y = base_y+height_y
         for x in range(base_x, x_center):
-            utilityFunctions.setBlock(level, (67,0), x, y, z)
+            utilityFunctions.setBlock(level, (pallete.roof_stair,0), x, y, z)
             y += 1
         adjust = 0
         if length_x % 2 != 0:
             adjust = 1
-            utilityFunctions.setBlock(level, (4,0), x_center, y - 1, z)
+            utilityFunctions.setBlock(level, pallete.roof_block, x_center, y - 1, z)
 
         y = base_y+height_y
         for x in range(base_x + length_x - 1, x_west, -1):
-            utilityFunctions.setBlock(level, (67,1), x, y, z)
+            utilityFunctions.setBlock(level, (pallete.roof_stair,1), x, y, z)
             y += 1
 
     y_r = base_y+height_y
     for x in range(base_x, x_center):
         for y in range(base_y+height_y, y_r):
-            utilityFunctions.setBlock(level, (4,0), x, y, base_z)
-            utilityFunctions.setBlock(level, (4,0), x, y, base_z + length_z - 1)
+            utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z)
+            utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z + length_z - 1)
         y_r += 1
     adjust = 0
     if length_x % 2 != 0:
         adjust = 1
         for y in range(base_y+height_y, y_r):
-            utilityFunctions.setBlock(level, (4,0), x_center, y, base_z)
-            utilityFunctions.setBlock(level, (4,0), x_center, y, base_z + length_z - 1)
+            utilityFunctions.setBlock(level, pallete.roof_block, x_center, y, base_z)
+            utilityFunctions.setBlock(level, pallete.roof_block, x_center, y, base_z + length_z - 1)
 
     y_r = base_y+height_y
     for x in range(base_x + length_x - 1, x_west, -1):
         for y in range(base_y+height_y, y_r):
-            utilityFunctions.setBlock(level, (4,0), x, y, base_z)
-            utilityFunctions.setBlock(level, (4,0), x, y, base_z + length_z - 1)
+            utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z)
+            utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z + length_z - 1)
         y_r += 1
 
     return y_r-1
 
 
-def build_floor(level, box, length_x, height_y, length_z, base_x, base_y, base_z, front_side, stair_loc, top_offset):
-    wall_block = (20,0)
+def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, front_side, stair_loc, top_offset):
+
+    #wall_block = (20,0)
     #Walls of the house:
     x = base_x#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
         for y in range(base_y, base_y + height_y + top_offset):
-            utilityFunctions.setBlock(level, wall_block, x, y, z)
+            utilityFunctions.setBlock(level, pallete.wall, x, y, z)
 
     z = base_z
     for x in range (base_x + 1, base_x + length_x - 1):#x-directional wall
         for y in range(base_y, base_y + height_y + top_offset):
-            utilityFunctions.setBlock(level, wall_block, x, y, z)
+            utilityFunctions.setBlock(level, pallete.wall, x, y, z)
 
     #Other walls:
     x = base_x + length_x - 1#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
         for y in range(base_y, base_y + height_y + top_offset):
-            utilityFunctions.setBlock(level, wall_block, x, y, z)
+            utilityFunctions.setBlock(level, pallete.wall, x, y, z)
 
     z = base_z + length_z - 1
     for x in range (base_x + 1, base_x + length_x - 1):#x-directional wall
         for y in range(base_y, base_y + height_y + top_offset):
-            utilityFunctions.setBlock(level, wall_block, x, y, z)
+            utilityFunctions.setBlock(level, pallete.wall, x, y, z)
 
     #Corner Pillars:
     for y in range(base_y, base_y+height_y + top_offset):
-         utilityFunctions.setBlock(level, (3,0), base_x, y, base_z)
-         utilityFunctions.setBlock(level, (3,0), base_x, y, base_z + length_z - 1)
-         utilityFunctions.setBlock(level, (3,0), base_x + length_x - 1, y, base_z)
-         utilityFunctions.setBlock(level, (3,0), base_x + length_x - 1, y, base_z + length_z - 1)
+         utilityFunctions.setBlock(level, pallete.pillar, base_x, y, base_z)
+         utilityFunctions.setBlock(level, pallete.pillar, base_x, y, base_z + length_z - 1)
+         utilityFunctions.setBlock(level, pallete.pillar, base_x + length_x - 1, y, base_z)
+         utilityFunctions.setBlock(level, pallete.pillar, base_x + length_x - 1, y, base_z + length_z - 1)
 
     if stair_loc == 0:
         #stair on west side, grow to south side
@@ -327,41 +290,41 @@ def build_floor(level, box, length_x, height_y, length_z, base_x, base_y, base_z
         start_z = base_z + length_z - height_y - 2
 
         for i in range(height_y):
-            utilityFunctions.setBlock(level, (67,2), start_x, base_y+i, start_z+i)
+            utilityFunctions.setBlock(level, (pallete.stair, 2), start_x, base_y+i, start_z+i)
             if i < height_y - 1:
-                utilityFunctions.setBlock(level, (67,7), start_x, base_y+i, start_z+i+1)
+                utilityFunctions.setBlock(level, (pallete.stair, 7), start_x, base_y+i, start_z+i+1)
             else:#one extra floor block for more convenient walking
-                utilityFunctions.setBlock(level, (1,0), start_x, base_y+i, start_z+i+1)
+                utilityFunctions.setBlock(level, pallete.floor, start_x, base_y+i, start_z+i+1)
 
         y_ceiling = base_y + height_y - 1
 
         for z in range(base_z + 1, start_z):
-            utilityFunctions.setBlock(level, (1,0), base_x + 1, y_ceiling, z)
+            utilityFunctions.setBlock(level, pallete.floor, base_x + 1, y_ceiling, z)
         for x in range (base_x + 2, base_x + length_x - 1):
             for z in range(base_z + 1, base_z + length_z - 1):
-                utilityFunctions.setBlock(level, (1,0), x, y_ceiling, z)
+                utilityFunctions.setBlock(level, pallete.floor, x, y_ceiling, z)
     #elif stair_loc == 1:
         #stair on north side grow to west side
     elif stair_loc == 2:
         #stair on east side grow to north side
         start_x = base_x + length_x - 2
         start_z = base_z + height_y + 1
-        utilityFunctions.setBlock(level, (67,1), start_x, base_y, start_z)
+        utilityFunctions.setBlock(level, (pallete.stair,1), start_x, base_y, start_z)
 
         for i in range(height_y):
-            utilityFunctions.setBlock(level, (67,3), start_x, base_y+i, start_z-i)
+            utilityFunctions.setBlock(level, (pallete.stair,3), start_x, base_y+i, start_z-i)
             if i < height_y - 1:
-                utilityFunctions.setBlockIfEmpty(level, (67,6), start_x, base_y+i, start_z-i-1)
+                utilityFunctions.setBlockIfEmpty(level, (pallete.stair,6), start_x, base_y+i, start_z-i-1)
             else:#one extra floor block for more convenient walking
-                utilityFunctions.setBlockIfEmpty(level, (1,0), start_x, base_y+i, start_z-i-1)
+                utilityFunctions.setBlockIfEmpty(level, pallete.floor, start_x, base_y+i, start_z-i-1)
 
         y_ceiling = base_y + height_y - 1
 
         for z in range(start_z + 1, base_z + length_z - 1):
-            utilityFunctions.setBlock(level, (1,0), base_x + length_x - 2, y_ceiling, z)
+            utilityFunctions.setBlock(level, pallete.floor, base_x + length_x - 2, y_ceiling, z)
         for x in range (base_x + 1, base_x + length_x - 2):
             for z in range(base_z + 1, base_z + length_z - 1):
-                utilityFunctions.setBlock(level, (1,0), x, y_ceiling, z)
+                utilityFunctions.setBlock(level, pallete.floor, x, y_ceiling, z)
     #else: #if stair_loc == 3:
         #stair on south side grow to east side
 
@@ -377,6 +340,8 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     level = MCSchematic((length_x, tot_height, length_z))#working object
     box = bx.BoundingBox((0,0,0),(length_x, tot_height, length_z))
 
+    pallete = Pallete()
+
     #level = MCSchematic((box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))#working object
 
     #Walls:
@@ -384,9 +349,9 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     stair_loc = 0
     for i in range(no_floors):
         if i == no_floors - 1:
-            build_floor(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 1)
+            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 1)
         else:
-            build_floor(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 0)
+            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 0)
         stair_loc += 2
         stair_loc %= 4
         temp_base_y += height_y
@@ -395,23 +360,23 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     #floor:
     for x in range (base_x + 1, base_x + length_x - 1):
         for z in range(base_z + 1, base_z + length_z - 1):
-            utilityFunctions.setBlock(level, (1,0), x, base_y-1, z)
+            utilityFunctions.setBlock(level, pallete.floor, x, base_y-1, z)
 
 
     #else:
         #door in N/S section
-    y_r = north_south_roof(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
-    facade(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
+    y_r = build_roof(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
+    #FIXME facade(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
     door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
     door_z = base_z #if door_loc == 1 else base_z + length_z - 1
-    windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, y_r)
+    #FIXME windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, y_r)
 
     #floor block underneeth door:
-    utilityFunctions.setBlock(level, (1,0), door_x, base_y - 1, door_z)
+    utilityFunctions.setBlock(level, pallete.floor, door_x, base_y - 1, door_z)
 
     #clear blocks for the door:
-    utilityFunctions.setBlock(level, (0,0), door_x, base_y, door_z)
-    utilityFunctions.setBlock(level, (0,0), door_x, base_y + 1, door_z)
+    utilityFunctions.setBlock(level, (0,0), door_x, base_y, door_z) #air
+    utilityFunctions.setBlock(level, (0,0), door_x, base_y + 1, door_z) #air
 
     #setBlock(x, y, z,"acacia_door")
     #place actual door:
@@ -419,20 +384,17 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     #utilityFunctions.setBlock(level, ("acacia_door", door_loc), door_x, base_y, door_z)
     #utilityFunctions.setBlock(level, "acacia_door[half=upper]", door_x, base_y, door_z)
 
-    utilityFunctions.setBlock(level, (71, 1), door_x, base_y, door_z)
-    utilityFunctions.setBlock(level, (71, 1 + 8), door_x, base_y + 1, door_z)
+    utilityFunctions.setBlock(level, (pallete.door, 1), door_x, base_y, door_z)
+    utilityFunctions.setBlock(level, (pallete.door, 1 + 8), door_x, base_y + 1, door_z)
     #source for door and bed rotations: https://github.com/abrightmoore/ProceduralSettlementsInMinecraft/blob/master/House.py
-    print("level:", level.size)
+    #print("level:", level.size)
 
-    #box = bx.BoundingBox((0,0,0),(scheme.Length, scheme.Height, scheme.Width))
 
     return level, box
 
 
-
-
 def place_house(og_level, length_x, height_y, length_z, base_x, base_y, base_z, rotations, no_floors, facade_type):
-    scheme, box = build_house(length_x, height_y, length_z, no_floors, facade_type)#schematic.extractSchematicFrom(og_level, og_box)
+    scheme, box = build_house(length_x, height_y, length_z, no_floors, facade_type)
 
     if rotations % 2 == 0:
         rot_box = bx.BoundingBox((0,0,0),(box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))

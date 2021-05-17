@@ -150,48 +150,70 @@ def get_color_palet(level, box):
 
 class Pallete():
     def __init__(self, pillars=False):
-        self.wall = (1, 0)
-        self.pillar = (1, 0)
+        rng_wall = random.randint(0, 5)
+        if rng_wall == 0:#white
+            self.wall = (251, 0)
+        elif rng_wall == 1:#gray
+            self.wall = (251, 7)
+        elif rng_wall == 2:#light gray
+            self.wall = (251, 8)
+        elif rng_wall == 3:#brown
+            self.wall = (251, 12)
+        elif rng_wall == 4:#orange
+            self.wall = (251, 1)
+        elif rng_wall == 6:#gray bricks
+            self.wall = (98, 0)
+        elif rng_wall == 7:#orange bricks
+            self.wall = (45, 0)
 
-        plank = random.randint(0,1)
-        print('plank = ', plank)
-        if plank == 0:#oak
+        self.pillar = self.wall#(251, 0)TODO if pillars == True...
+
+        rng_plank = random.randint(0, 2)
+        print('plank = ', rng_plank)
+        if rng_plank == 0:#oak
             self.stair = 53
             self.floor = (5, 0)
-        elif plank == 1:#spruce
+        elif rng_plank == 1:#spruce
             self.stair = 134
             self.floor = (5, 1)
+        elif rng_plank == 2:#birch
+            self.stair = 135
+            self.floor = (5, 2)
 
-        door = random.randint(0,2)
-        print('door = ', door)
-        if door == 0:#oak
+        rng_door = random.randint(0, 4)
+        print('door = ', rng_door)
+        if rng_door == 0:#oakw
             self.door = 64
-        elif door == 1:#spruce
+        elif rng_door == 1:#spruce
             self.door = 193
-        elif door == 2:#dark oak
+        elif rng_door == 2:#birch
+            self.door = 194
+        elif rng_door == 3:#jungle
+            self.door = 195
+        elif rng_door == 4:#dark oak
             self.door = 197
 
-        roof = random.randint(0, 3)
-        print('roof = ', roof)
-        if roof == 0:#red bricks
+        rng_roof = random.randint(0, 3)
+        print('roof = ', rng_roof)
+        if rng_roof == 0:#red bricks
             self.roof_stair = 108
             self.roof_block = (45, 0)
             self.roof_slab = (44, 4)
-        elif roof == 1:#gray bricks
+        elif rng_roof == 1:#gray bricks
             self.roof_stair = 109
             self.roof_block = (98, 0)
             self.roof_slab = (44, 5)
-        elif roof == 2:#nether bricks
+        elif rng_roof == 2:#nether bricks
             self.roof_stair = 114
             self.roof_block = (112, 0)
             self.roof_slab = (44, 6)
-        elif roof == 3:#dark oak
+        elif rng_roof == 3:#dark oak
             self.roof_stair = 164
             self.roof_block = (5, 5)
             self.roof_slab = (126, 5)
 
         #self.decoration_slab #TODO add if nescassary TODO
-        raam = random.randint(0,2)
+        raam = random.randint(0, 2)
         print('raam = ', raam)
         if raam == 0:#vanilla
             self.window = (120, 0)
