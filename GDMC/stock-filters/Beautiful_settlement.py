@@ -417,9 +417,12 @@ class Settlement:
   def __generate_buildings(self):
     for building in self.buildings:#TODO talk to @Jerry when he is done with @Sem
       facade_type = random.randint(0, 3)
-      place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+      if building.front % 2 == 0:
+        place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+      else:
+        place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
       print("settlement i:", building.front)
-      break
+      #break
       #pass
       # TODO: generate(self.level, building.P, building.length, building.width, building.front)
 
