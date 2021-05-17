@@ -210,7 +210,7 @@ def windows_beta(level, box, length_x, height_y, length_z, base_x, temp_base_y, 
         y_r -=2
 
 
-def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
+def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
@@ -252,10 +252,7 @@ def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, bas
     return y_r-1
 
 
-def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, front_side, stair_loc, top_offset):
-
-    #wall_block = (20,0)
-    #Walls of the house:
+def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, stair_loc, top_offset):
     x = base_x#z-directional wall
     for z in range(base_z + 1, base_z + length_z - 1):
         for y in range(base_y, base_y + height_y + top_offset):
@@ -348,10 +345,10 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     temp_base_y = base_y
     stair_loc = 0
     for i in range(no_floors):
-        if i == no_floors - 1:
-            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 1)
-        else:
-            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, 1, stair_loc, 0)
+        if i == no_floors - 1:#top most floor
+            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, stair_loc, 1)
+        else:#middel floor
+            build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, stair_loc, 0)
         stair_loc += 2
         stair_loc %= 4
         temp_base_y += height_y
@@ -365,7 +362,7 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
 
     #else:
         #door in N/S section
-    y_r = build_roof(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
+    y_r = build_roof(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z)
     #FIXME facade(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
     door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
     door_z = base_z #if door_loc == 1 else base_z + length_z - 1
