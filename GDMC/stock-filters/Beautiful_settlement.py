@@ -53,6 +53,7 @@ class Settlement:
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
+    self.edge = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
 
 
   # Check whether given (x,z) is in the box
@@ -168,6 +169,14 @@ class Settlement:
     self.__generate_canal(P0, crosspoint)
 
 
+  # Update edge map; 1 = edge
+  def __update_edge(self, x, z):
+    for i in range(-1, 2):
+      for j in range(-1, 2):
+        if self.__in_box(x+i, z+j):
+          self.edge[x+i][z+j] = 1
+  
+
   # Generate canals surrounding the settlement, has a gear-like shape
   # Also preparations for the three smaller canals
   def __generate_canals(self, outer_r, inner_r):
@@ -216,6 +225,8 @@ class Settlement:
       elif alpha == R2:
         P2 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
             
+      self.__update_edge(x_outer, z_outer)
+
       length += 1
     
     # Connect ends of canals if current is not the same as the initial
@@ -372,7 +383,8 @@ class Settlement:
       else:         # EAST
         i = 3
 
-      self.buildings.append(Building(building[0], width, length, i))  # Add new building
+      pos = (P1_x+self.box.minx, P1_y-1, P1_z+self.box.minz)
+      self.buildings.append(Building(pos, width, length, i))  # Add new building
 
 
   # Create plots on which the buildings can be generated
@@ -396,7 +408,7 @@ class Settlement:
             for i in range(x, x+width_plot):  # Mark plot
               for j in range(z, z+length_plot):
                 self.__place_block((35,12), i, self.__get_height(i,j), j)
-            temp.append( [(x + self.box.minx, y - 1, z + self.box.minz), (width_plot, length_plot)] )
+            temp.append( [(x, y, z), (width_plot, length_plot)] )
     
     self.__determine_front(temp)
   
