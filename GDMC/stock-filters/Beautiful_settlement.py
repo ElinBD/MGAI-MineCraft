@@ -10,6 +10,7 @@ from Beautiful_settings import *
 from Beautiful_meta_analysis import get_height_map, get_biome_map, get_surface_type_map
 from Beautiful_starting_point import find_starting_point
 from Beautiful_terraforming import flatten_box
+from Beautiful_house import place_house
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
@@ -19,11 +20,12 @@ inputs = (
 
 # Stores data about one building
 class Building:
-  def __init__(self, P, length, width, front):
+  def __init__(self, P, length, width, front, multiple):
     self.P = P
     self.length = length
     self.width = width
-    self.front = front  # North = 0, West = 1, South = 2, East = 3
+    self.front = front  # North, east, south, west
+    self.multiple = multiple  # Is the plot for multiple or one building?
 
 
 # Create settlement
@@ -52,6 +54,7 @@ class Settlement:
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
+    self.edge = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
 
 
   # Check whether given (x,z) is in the box
@@ -124,7 +127,9 @@ class Settlement:
 
   # Flatten area where the settlement will be
   def __flatten(self, outer_r):
-    y_level = self.__get_height(self.x_center_box, self.z_center_box)
+    values, counts = np.unique(self.height_map.flatten(), return_counts=True)  # Compute mode
+    mode_height = values[np.argmax(counts)]
+    y_level = mode_height + self.box_origin_height  # Mode of height map
     for r in range(1, outer_r+1):
       for alpha in range(0,360):
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
@@ -166,6 +171,14 @@ class Settlement:
     self.__generate_canal(P2, crosspoint)
     self.__generate_canal(P0, crosspoint)
 
+
+  # Update edge map; 1 = edge
+  def __update_edge(self, x, z):
+    for i in range(-1, 2):
+      for j in range(-1, 2):
+        if self.__in_box(x+i, z+j):
+          self.edge[x+i][z+j] = 1
+  
 
   # Generate canals surrounding the settlement, has a gear-like shape
   # Also preparations for the three smaller canals
@@ -215,6 +228,8 @@ class Settlement:
       elif alpha == R2:
         P2 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
             
+      self.__update_edge(x_outer, z_outer)
+
       length += 1
     
     # Connect ends of canals if current is not the same as the initial
@@ -291,12 +306,16 @@ class Settlement:
 
   # Compute number of free blocks in every direction around building
   # Returns optimal direction
-  def __compute_space(self, building):
+  # If the plot is for multiple buildings (multiple=True)
+  def __compute_space(self, building, multiple):
     P1_x, P1_y, P1_z = building[0][0], building[0][1], building[0][2]
     width, length = building[1][0], building[1][1]
 
     space = np.zeros(4, dtype=int)  # Four counters, for each direction
     indices = range(4)
+
+    along_x = width > length  # Is the plot for the multiple buildings along the x-axis?
+                              # Only the long side of the plot should be checked for canals (since it will be multiple buildings)
 
     for x in range(P1_x-3, P1_x+width+3):
       for z in range(P1_z-3, P1_z+length+3):
@@ -307,20 +326,20 @@ class Settlement:
         if not P1_x <= x < P1_x+width:
           if x < P1_x and (block == ROAD[0] or block == WATER[0]):  # EAST
             space[0] += 1
-            if block == WATER[0]:  # Point towards canal
+            if block == WATER[0] and (not multiple or not along_x):  # Point towards canal
               space[0] += CANAL_VALUE
           elif x > P1_x+width-1 and (block == ROAD[0] or block == WATER[0]):  # WEST
             space[3] += 1
-            if block == WATER[0]:  # Point towards canal
+            if block == WATER[0] and (not multiple or not along_x):  # Point towards canal
               space[3] += CANAL_VALUE
         if not P1_z <= z < P1_z+length:
           if z < P1_z and (block == ROAD[0] or block == WATER[0]):  # SOUTH
             space[2] += 1
-            if block == WATER[0]:  # Point towards canal
+            if block == WATER[0] and (not multiple or along_x):  # Point towards canal
               space[2] += CANAL_VALUE
           elif z > P1_z+length-1 and (block == ROAD[0] or block == WATER[0]):  # NORTH
             space[1] += 1
-            if block == WATER[0]:  # Point towards canal
+            if block == WATER[0] and (not multiple or along_x):  # Point towards canal
               space[1] += CANAL_VALUE
     
     # If multiple indices have max value, shuffle indices and space with same seed
@@ -334,9 +353,10 @@ class Settlement:
 
   # Determine front of every building based on space around it
   # Also creates a new Building object, storing all necessary data
-  def __determine_front(self, temp):
+  # If multiple = True, then the plot is for multiple buildings
+  def __determine_front(self, temp, multiple):
     for building in temp:      
-      i = self.__compute_space(building)
+      i = self.__compute_space(building, multiple)
 
       # TODO: remove =====================================================
       P1_x, P1_y, P1_z = building[0][0], building[0][1], building[0][2]
@@ -360,22 +380,56 @@ class Settlement:
       # ==================================================================
       
       # Convert i to correct format for building
-      # Currently: NORTH = 2, EAST = 3, SOUTH = 1, WEST = 0
-      # Should be: NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3
       if i == 0:    # WEST
-        i = 3
+        i = 1
       elif i == 1:  # SOUTH
         i = 2
       elif i == 2:  # NORTH
         i = 0
       else:         # EAST
-        i = 1
+        i = 3
 
-      self.buildings.append(Building(building[0], width, length, i))  # Add new building
+      pos = (P1_x+self.box.minx, P1_y-1, P1_z+self.box.minz)
+      self.buildings.append(Building(pos, width, length, i, multiple))  # Add new building
 
+  # Create large plots, each containing multiple buildings
+  # The plots are along one axis, and consequently the front can only be on two sides (along the selected axis)
+  def __place_large_plots(self, outer_r):
+    temp = []  # Temporal storage of buildings
 
-  # Create plots on which the buildings can be generated
-  def __place_plots(self, outer_r):
+    for r in range(0, outer_r):
+      for alpha in range(0, 360):
+        if r > self.max_radius[alpha]:  # Skip, edge found
+          continue
+        
+        x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+        z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+
+        attempt = 0
+        while attempt < 2:  # Two attempts: 1 -> along x-axis | 2 -> along z-axis
+          if attempt == 0:    # Along x-axis
+            width_plot = random.randint(MIN_WIDTH_MULT, MAX_WIDTH_MULT)   # X
+            length_plot = random.randint(MIN_DEPTH, MAX_DEPTH)   # Z
+          elif attempt == 1:  # Along z-axis
+            width_plot = random.randint(MIN_DEPTH, MAX_DEPTH)    # X
+            length_plot = random.randint(MIN_WIDTH_MULT, MAX_WIDTH_MULT)  # Z
+
+          # Try plot
+          if self.__available((x-2, z-2), (x+width_plot+2, z+length_plot+2)):
+            y = self.__get_height(x,z)
+            for i in range(x, x+width_plot):  # Mark plot
+              for j in range(z, z+length_plot):
+                self.__place_block((35,12), i, self.__get_height(i,j), j)
+            temp.append( [(x, y, z), (width_plot, length_plot)] )
+            break
+          
+          attempt += 1
+    
+    self.__determine_front(temp, True)
+  
+
+  # Create small plots on which the small buildings can be generated
+  def __place_small_plots(self, outer_r):
     temp = []  # Temporal storage of buildings
 
     for r in range(0, outer_r):
@@ -389,7 +443,7 @@ class Settlement:
         width_plot = random.randint(MIN_WIDTH, MAX_WIDTH)     # X
         length_plot = random.randint(MIN_LENGTH, MAX_LENGTH)  # Z
 
-        if self.__available((x-1, z-1), (x+width_plot+1, z+length_plot+1)):
+        if self.__available((x-2, z-2), (x+width_plot+2, z+length_plot+2)):
           if random.uniform(0,1) <= P_PLOT:  # Probability to create plot
             y = self.__get_height(x,z)
             for i in range(x, x+width_plot):  # Mark plot
@@ -397,14 +451,18 @@ class Settlement:
                 self.__place_block((35,12), i, self.__get_height(i,j), j)
             temp.append( [(x, y, z), (width_plot, length_plot)] )
     
-    self.__determine_front(temp)
+    self.__determine_front(temp, False)
   
 
   # Generate a building on top of each plot
   def __generate_buildings(self):
+    return
     for building in self.buildings:
-      pass
-      # TODO: generate(self.level, building.P, building.length, building.width, building.front)
+      facade_type = random.randint(0, 3)
+      if building.front % 2 == 0:
+        place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+      else:
+        place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
 
 
   # Check whether a 3x3 grid is available and that there is no light
@@ -435,7 +493,7 @@ class Settlement:
     for i in range(LEN_POLE):
       self.__place_block(POLE, x, y+i+1, z)
     self.__place_block((123,0), x, y+LEN_POLE+1, z)  # Redstone light
-    self.__place_block((151,0), x, y+LEN_POLE+2, z)  # Daylight sensor  (NOTE: if not working -> (178,0))
+    self.__place_block((178,0), x, y+LEN_POLE+2, z)  # Daylight sensor
 
 
   # Generate street lights with redstone lamp + light sensor
@@ -481,7 +539,8 @@ class Settlement:
     self.__generate_inner_canals(P0, P1, P2)  # Three inner canals
 
     print "Generating plots for the buildings.."
-    self.__place_plots(outer_r)  # Generate random plots for the buildings
+    self.__place_large_plots(outer_r)  # Generate random big plots, each containing multiple buildings
+    self.__place_small_plots(outer_r)  # Generate random small plots, each containing one building
 
     print "Generating buildings.."
     self.__generate_buildings()
