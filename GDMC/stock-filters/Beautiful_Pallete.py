@@ -150,6 +150,10 @@ def get_color_palet(level, box):
 
 class Pallete():
     def __init__(self, pillars=False):
+        self.quartz_stair = 156
+        self.quartz_block = (155, 0)
+        self.quartz_slab = (44, 7)
+
         rng_wall = random.randint(0, 5)
         if rng_wall == 0:#white
             self.wall = (251, 0)
@@ -166,6 +170,7 @@ class Pallete():
         elif rng_wall == 7:#orange bricks
             self.wall = (45, 0)
 
+        self.wall = (45, 0)#FIXME hardcoded
         self.pillar = self.wall#(251, 0)TODO if pillars == True...
 
         rng_plank = random.randint(0, 2)

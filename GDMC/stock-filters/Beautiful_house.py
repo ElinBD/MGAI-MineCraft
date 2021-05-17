@@ -23,43 +23,43 @@ inputs = (
 )
 
 
-def small_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
+def small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
     y = base_y+height_y+1
     for x in range(base_x, x_center):
-        utilityFunctions.setBlock(level, (67,0), x, y, base_z)
+        utilityFunctions.setBlock(level, (pallete.quartz_stair,0), x, y, base_z)
         y += 1
 
     y = base_y+height_y+1
     for x in range(base_x + length_x - 1, x_west, -1):
-        utilityFunctions.setBlock(level, (67,1), x, y, base_z)
+        utilityFunctions.setBlock(level, (pallete.quartz_stair,1), x, y, base_z)
         y += 1
 
     if length_x % 2 != 0: # Building has an uneven with. Random chance to place another block in the middle on top
         extra_top = random.randint(0, 1)
         if extra_top:
-            utilityFunctions.setBlock(level, (44,0), x_center, y, base_z)
+            utilityFunctions.setBlock(level, pallete.quartz_slab, x_center, y, base_z)
 
-def large_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
+def large_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
     y_r = base_y+height_y+1
     for x in range(base_x, x_center):
-        utilityFunctions.setBlock(level, (4,0), x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
         y_r += 1
     y_r = base_y+height_y+1
     for x in range(base_x + length_x - 1, x_west, -1):
-        utilityFunctions.setBlock(level, (4,0), x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
         y_r += 1
 
     if length_x%2 != 0: # Building has an uneven with. Random chance to place another block in the middle on top
         extra_top = random.randint(0, 1)
         if extra_top:
-            utilityFunctions.setBlock(level, (4,0), x_center, y_r, base_z)
+            utilityFunctions.setBlock(level, pallete.wall, x_center, y_r, base_z)
 
-def clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z):
+def clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
     y = base_y+height_y+1
@@ -68,18 +68,18 @@ def clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_
     middle_part = (length_x // 3) + (length_x % 3)
     for x in range(side_parts, middle_part + side_parts):
         for y_r in range(y, facade_height):
-            utilityFunctions.setBlock(level, (4,0), x, y_r, base_z)
-    utilityFunctions.setBlock(level, (67,0), side_parts, facade_height-1, base_z)
-    utilityFunctions.setBlock(level, (67,1), length_x-side_parts-1, facade_height-1, base_z)
+            utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
+    utilityFunctions.setBlock(level, (pallete.quartz_stair,0), side_parts, facade_height-1, base_z)
+    utilityFunctions.setBlock(level, (pallete.quartz_stair,1), length_x-side_parts-1, facade_height-1, base_z)
 
     for x in range(side_parts, x_center):
         y = facade_height
         y_r = facade_height + (x-side_parts) * 0.5
         while y < y_r:
             if y_r-y > 0.5:
-                utilityFunctions.setBlock(level, (4,0), x, y, base_z)
+                utilityFunctions.setBlock(level, pallete.wall, x, y, base_z)
             else:
-                utilityFunctions.setBlock(level, (44,0), x, y, base_z)
+                utilityFunctions.setBlock(level, pallete.quartz_slab, x, y, base_z)
             y += 1
         y_r += 0.5
 
@@ -89,43 +89,43 @@ def clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_
         y_r = facade_height + ((length_x-side_parts-1)-x) * 0.5
         while y < y_r:
             if y_r-y > 0.5:
-                utilityFunctions.setBlock(level, (4,0), x, y, base_z)
+                utilityFunctions.setBlock(level, pallete.wall, x, y, base_z)
             else:
-                utilityFunctions.setBlock(level, (44,0), x, y, base_z)
+                utilityFunctions.setBlock(level, pallete.quartz_slab, x, y, base_z)
             y += 1
         y_r += 0.5
 
-def facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
+def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, facade_type):
     x_center = base_x + length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
     # Heightening the facade...
     for x in range(0, length_x):
-        utilityFunctions.setBlock(level, (4,0), x, base_y+height_y, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x, base_y+height_y, base_z)
 
     y_r = base_y+height_y
     for x in range(base_x, x_center):
-        utilityFunctions.setBlock(level, (4,0), x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
         y_r += 1
 
     if length_x % 2 != 0:
-        utilityFunctions.setBlock(level, (4,0), x_center, y_r-1, base_z)
-        utilityFunctions.setBlock(level, (4,0), x_center, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x_center, y_r-1, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x_center, y_r, base_z)
 
     y_r = base_y+height_y
     for x in range(base_x + length_x - 1, x_west, -1):
-        utilityFunctions.setBlock(level, (4,0), x, y_r, base_z)
+        utilityFunctions.setBlock(level, pallete.wall, x, y_r, base_z)
         y_r += 1
 
     # Roof types. Roof type 0 is just doing nothing: small staircase facade.
     if facade_type == 0: # Small staircase facade
-        small_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z)
+        small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z)
 
     elif facade_type == 1: # Large staircase facade
-        large_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z)
+        large_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z)
 
     elif facade_type == 2: # Lit. translation: clock/neck type facade
-        small_stairs_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z) # Side of facade
-        clock_facade(level, box, length_x, height_y, length_z, base_x, base_y, base_z) # Center of facade
+        small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Side of facade
+        clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Center of facade
 
 
 def windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, total_height): # This function currently assumes the building has an uneven width
@@ -235,9 +235,8 @@ def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, bas
             utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z)
             utilityFunctions.setBlock(level, pallete.roof_block, x, y, base_z + length_z - 1)
         y_r += 1
-    adjust = 0
+        
     if length_x % 2 != 0:
-        adjust = 1
         for y in range(base_y+height_y, y_r):
             utilityFunctions.setBlock(level, pallete.roof_block, x_center, y, base_z)
             utilityFunctions.setBlock(level, pallete.roof_block, x_center, y, base_z + length_z - 1)
@@ -363,7 +362,7 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     #else:
         #door in N/S section
     y_r = build_roof(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z)
-    #FIXME facade(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
+    facade(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
     door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
     door_z = base_z #if door_loc == 1 else base_z + length_z - 1
     #FIXME windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, y_r)
