@@ -393,11 +393,11 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     #print("level:", level.size)
 
 
-    return level, box
+    return level, box, [door_x, door_z]
 
 
 def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type):
-    scheme, box = build_house(length_x, height_y, length_z, no_floors, facade_type)
+    scheme, box, door_coords = build_house(length_x, height_y, length_z, no_floors, facade_type)
 
     if rotations % 2 == 0:
         rot_box = bx.BoundingBox((0,0,0),(box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))
@@ -405,12 +405,15 @@ def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floo
         rot_box = bx.BoundingBox((0,0,0),(box.maxz-box.minz,box.maxy-box.miny,box.maxx-box.minx))
 
     for i in range(rotations):
-        print("rotate")
         scheme.rotateLeft()
 
     og_level.copyBlocksFrom(scheme, rot_box, base)
 
-    print("place house at: ", base, " with orientation: ", rotations)
+    #transform from scheme coords to global coords
+    door_coords[0] += base[0]#x
+    door_coords[1] += base[2]#z
+
+    return door_coords
 
 def perform(level, box, options):
     height_y = options["height (y)"]
