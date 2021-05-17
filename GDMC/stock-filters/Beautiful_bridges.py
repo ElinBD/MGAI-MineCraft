@@ -307,19 +307,93 @@ def build_flat_bridge(level, box, y_base, bridge_material):
             utilityFunctions.setBlock(level, bridge_material, x, y_base, z)
 
 
+def fillup_fundering(level, box, height_map, y_base, horizontal):
+    '''Fill underneath start and ending steps '''
+
+    if horizontal:
+        start_step = height_map[0, :]
+        highest_in_startstep = max(start_step) + y_base
+
+        for count, z in enumerate(range(box.minz, box.maxz)):
+            block_height = start_step[count]
+
+        for positions in start_steps:
+            # fill up with stone / dirt
+            None
+
+        end_step = height_map[-1, :]
+        highest_in_endstep = max(end_step) + y_base
+
+        for positions in start_steps:
+            # fill up with stone / dirt
+            None
+    else:
+        start_step = height_map[:, 0]
+        end_step = height_map[:, -1]
+        
+        highest_in_startstep = max(start_step) + y_base
+
+        for positions in start_steps:
+            # fill up with stone / dirt
+            None
+
+        end_step = height_map[-1, :]
+        highest_in_endstep = max(end_step) + y_base
+
+        for positions in start_steps:
+            # fill up with stone / dirt
+            None
+
+    highest_in_endstep = max(end_step) + y_base
+
+
+def find_direction(box):
+    """Find out in the bridge should be build in long or wide form"""
+    xdif = box.maxx - box.minx 
+    zdif = box.maxz - box.minz 
+
+    # is horizontal?
+    if xdif > zdif:
+        return True
+    else:
+        return False
+
 def build_bridge(level, box, bridge_type):
-    # height_map = get_height_map(level, box)
-    highest_val = box.maxy
-    # bridge_material = get_col_pal().bridge
-    bridge_material = (1, 0)
-    y_base = highest_val
+    horizontal = find_direction(box)
+    bridge_material = (1,0)
+
+    #x = width, z = length
+    print(box.width)
+    print(box.length)
+
+    # get at which height the bridge should be built + how high in should be
+    height_map = get_height_map(level, box)
+    ymax_ratio = np.max(height_map)
+    ymax_overal = box.maxy
+    y_base = ymax_overal - ymax_ratio
+
+    fillup_fundering(level, box, height_map, y_base, horizontal)
 
     if bridge_type == 0:
         build_flat_bridge(level, box, y_base, bridge_material)
     elif bridge_type == 1:
         build_halfstair_bridge(level, box, y_base, bridge_material)
-    elif bridge_type == 2:
-        build_flat_bridge(level, box, y_base, bridge_material)
+
+
+
+
+
+
+
+    # # height_map = get_height_map(level, box)
+    # highest_val = box.maxy
+    # # bridge_material = get_col_pal().bridge
+    # bridge_material = (1, 0)
+    # y_base = highest_val
+
+
+    # elif bridge_type == 2:
+    #     build_flat_bridge(level, box, y_base, bridge_material)
 
 
 
@@ -340,21 +414,4 @@ def perform(level, box, options):
     #build_floor(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, 1, 2)
     # build_house(level, box, options, length_x, height_y, length_z, base_x, base_y, base_z, door_loc, no_floors, facade_type)
     build_bridge(level, box, bridge_type)
-
-	#TODO: windows, roof and facade top (different styles)
-
-	# while loop over windows: every 2 blocks, set as window if not door_x
-	# potentially, we could change the height of the windows on ground floor for smaller houses
-	# Also, we could generate houses with more width and windows of 2 meters wide
-	# If you google for "grachtenpanden minecraft", you'll see some nice examples or inspiration
-	# (or demotivation, wow those look nice... How do we even build such a thing?)
-
-	# Roofs: a few different styles, I've written them down on a paper. Those are
-	# a few basics. Again, look at "grachtenpanden minecraft for some inspiration".
-	# A lot of stuff is done with slabs and stairs that have been rotated upside
-	# down. How do we rotate in this program, anyway?
-
-	# Roof: Just use the staircase builder, but wihout the 'meat' of the staircase,
-	# that is, wihout the 'support'. Just use the stair blocks from minecraft. The
-	# rear of the buildings can be staircases.
 
