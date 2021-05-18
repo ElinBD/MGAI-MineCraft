@@ -298,6 +298,25 @@ class Settlement:
           self.max_radius[alpha] = r  # Inner ring found for current alpha, update max_radius
         
 
+  # Generate entrances into the outer walls, but only on the inner_r radius
+  def __entrances(self, inner_r, outer_r):
+    curr_len = MIN_LENGTH_C
+
+    for alpha in range(0, 360):
+      if self.max_radius[alpha] < outer_r and curr_len >= MIN_LENGTH_C and random.randint(0,1) <= P_ENTRANCE:
+        for r in range(1, inner_r+3):
+          x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+          z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+
+          self.__place_grid(AIR, x, z, 1)
+          self.__place_grid(AIR, x, z, 2)
+          self.__place_grid(AIR, x, z, 3)
+
+        curr_len = 0
+      curr_len += 1
+
+
+
   # Check if space between points P1 and P2 is available
   # Available -> no buildings
   def __available(self, P1, P2):
@@ -395,6 +414,7 @@ class Settlement:
 
       pos = (P1_x+self.box.minx, P1_y-1, P1_z+self.box.minz)
       self.buildings.append(Building(pos, width, length, i, multiple))  # Add new building
+
 
   # Create large plots, each containing multiple buildings
   # The plots are along one axis, and consequently the front can only be on two sides (along the selected axis)
@@ -548,6 +568,9 @@ class Settlement:
 
     print "Generating foundation and outer walls.."
     self.__foundation_and_walls(outer_r)  # Foundation of settlement + walls
+
+    print "Generating entrances..."
+    self.__entrances(inner_r, outer_r)  # Generating entrances in the outer walls
 
     print "Generating inner canals.."
     self.__generate_inner_canals(P0, P1, P2)  # Three inner canals

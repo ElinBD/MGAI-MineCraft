@@ -52,6 +52,7 @@ SPARSITY = 9    # Area (NxN) where at most one street light can be
 
 # ==== Outer wall specific ====
 LEN_WALL = 7
+P_ENTRANCE = 0.4  # Probability to generate an entrance in the outer wall
 
 
 # ==== Block-specifications (with the exception of the buildings) ====
