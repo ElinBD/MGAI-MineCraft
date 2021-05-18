@@ -57,7 +57,7 @@ class Settlement:
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
-    self.edge = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
+    self.domain = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
     self.doors = [] #list of all door locations
 
 
@@ -176,12 +176,12 @@ class Settlement:
     self.__generate_canal(P0, crosspoint)
 
 
-  # Update edge map; 1 = edge
-  def __update_edge(self, x, z):
+  # Update domain map; 1 = belongs to settlement
+  def __update_domain(self, x, z):
     for i in range(-1, 2):
       for j in range(-1, 2):
         if self.__in_box(x+i, z+j):
-          self.edge[x+i][z+j] = 1
+          self.domain[x+i][z+j] = 1
   
 
   # Generate canals surrounding the settlement, has a gear-like shape
@@ -231,8 +231,6 @@ class Settlement:
         P1 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
       elif alpha == R2:
         P2 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
-            
-      self.__update_edge(x_outer, z_outer)
 
       length += 1
     
@@ -275,13 +273,15 @@ class Settlement:
     self.max_radius = np.full(360, outer_r, dtype=int)  # Max radius at which water is found per alpha
 
     for r in range(1, outer_r):
-      for alpha in range(0, 360):
-        if r > self.max_radius[alpha]:  # Skip, water found
-          continue
-        
+      for alpha in range(0, 360):     
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
-        
+
+        self.__update_domain(x, z)
+
+        if r > self.max_radius[alpha]:  # Skip, water found
+          continue
+
         # Manual placement of 3x3 grid
         for i in range(-1, 2):
           for j in range(-1, 2):
