@@ -38,10 +38,8 @@ def small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, ba
         utilityFunctions.setBlock(level, (pallete.quartz_stair,1), x, y, base_z)
         y += 1
 
-    if length_x % 2 != 0: # Building has an uneven with. Random chance to place another block in the middle on top
-        extra_top = random.randint(0, 1)
-        if extra_top:
-            utilityFunctions.setBlock(level, pallete.quartz_slab, x_center, y, base_z)
+    if length_x % 2 != 0: # Building has an uneven with
+        utilityFunctions.setBlock(level, pallete.quartz_slab, x_center, y, base_z)
 
 def large_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
@@ -134,7 +132,7 @@ def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z,
     elif facade_type == 2: # Lit. translation: clock/neck type facade
         small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Side of facade
         clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Center of facade
-    
+
     # Place windows in facade
     for y in range(base_y+height_y, y_r-2):
         utilityFunctions.setBlock(level, pallete.window, x_center, y, base_z)
@@ -339,6 +337,68 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
     #else: #if stair_loc == 3:
         #stair on south side grow to east side
 
+def build_library(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
+    pass
+
+def build_kitchen(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
+    for x in build_space_x:
+        for z in build_space_z:
+            utilityFunctions.setBlock(level, (4,0), x, build_height, z)
+
+def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
+
+    utilityFunctions.setBlock(level, (26,8), length_x//2, build_height, length_z-2)
+    utilityFunctions.setBlock(level, (26,8), (length_x//2)+1, build_height, length_z-2)
+    utilityFunctions.setBlock(level, (26,0), length_x//2, build_height, length_z-3)
+    utilityFunctions.setBlock(level, (26,0), (length_x//2)+1, build_height, length_z-3)
+    pass
+
+def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
+    built_interiors = []
+    mandatory_interiors = ['kitchen', 'bedroom']
+    optional_interiors = ['bedroom', 'library'] # TODO: Add more?
+
+    current_floor = 0
+    while current_floor < no_floors+1:
+        if current_floor == 0: # Hardcode kitchen on the bottom floor
+            current_building_interior = 'kitchen'
+        else:
+            if current_floor == no_floors and 'bedroom' not in built_interiors: # We're on the last floor, and there's no bedroom yet!
+                current_building_interior = 'bedroom'
+            else: # There's already a bedroom, or we're not on the last floor yet
+                current_building_interior = random.choice(optional_interiors)
+
+        current_building_interior = 'kitchen'
+        print("Building " + current_building_interior)
+        build_height = 1+(current_floor*height_y)
+        stair_loc = current_floor%2
+
+        if current_floor == 0:
+            build_space_x = range(1, length_x-1)
+            build_space_z = range(3, length_z-1)
+        elif current_floor == no_floors:
+            build_space_x = range(2, length_x-2)
+            build_space_z = range(2, length_z-1)
+        else:
+            if stair_loc:
+                build_space_x = range(2, length_x-1)
+                build_space_z = range(2, length_z-3)
+            else:
+                build_space_x = range(1, length_x-2)
+                build_space_z = range(2, length_z-3)
+
+        if current_building_interior == 'bedroom':
+            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+        elif current_building_interior == 'kitchen':
+            build_kitchen(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+        elif current_building_interior == 'library':
+            build_library(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+        else:
+            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+
+        current_floor += 1
+
+
 # Start of the Generation script
 #  @ level: Minecraft world
 #  @ box: selected box by mcedit
@@ -376,7 +436,7 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
     facade(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
 
     #door:
-    
+
     door_z = 0
 
     if Sem:
@@ -388,7 +448,7 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
                 door_x = length_x - 2
         else:
             door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
-    
+
     else:
         door_x = math.floor(length_x / 2) if length_x > 6 else length_x - 2
 
@@ -439,6 +499,7 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
     utilityFunctions.setBlock(level, (pallete.door, door_rot), door_x, base_y, door_z)
     utilityFunctions.setBlock(level, (pallete.door, door_rot + 8), door_x, base_y + 1, door_z)
 
+    build_interior(level, pallete, length_x, height_y, length_z, no_floors)
 
     return level, box, [door_x, door_z]
 
