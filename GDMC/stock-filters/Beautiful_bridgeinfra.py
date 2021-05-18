@@ -1,7 +1,9 @@
 import numpy as np
 from random import sample
 from Beautiful_meta_analysis import get_surface_type_map
-
+import utilityFunctions as utilityFunctions
+from pymclevel import biome_types
+from pymclevel.box import BoundingBox
 
 # Information visible in mcedit, can be used for user-input
 inputs = (
@@ -18,7 +20,7 @@ def generate_candidates(waterpoints):
     """Generate 50 candidates where each candidates contains the x,z coordinates
         of 2 bridges."""
     num_bridges = 3
-    num_candidates = 100
+    num_candidates = 20
 
     candidates = []
     for i in range(num_candidates):
@@ -31,8 +33,8 @@ def generate_candidates(waterpoints):
 
 def fitness_function(candidate, doors):
     """"Calculates the fitness value for a single candidate"""
-    def f(x, clusters, clus):
-        return np.linalg.norm(x - clusters[clus])
+    def f(door, candidate, bridge):
+        return np.linalg.norm(door - candidate[bridge])
     
     # split candidate in the 3 bridge locations
     bridge_loca = np.split(candidate, len(candidate)/doors.shape[1])
@@ -70,8 +72,8 @@ def crossover(parents):
         p2idx = np.random.randint(low = 0, high=len(parents)-1, size=1)
         p2 = parents.pop(p2idx)
 
-        first_point_crossover = (np.random.uniform() > 0.6)
-        second_point_crossover = (np.random.uniform() > 0.6)
+        first_point_crossover = (np.random.uniform() < 0.2)
+        second_point_crossover = (np.random.uniform() < 0.2)
 
         if first_point_crossover and second_point_crossover:
             child1 = p1[0:2] + p2[2:4] + p1[4:6]
@@ -88,6 +90,9 @@ def crossover(parents):
             child2 = p1[0:4] + p2[4:6]
             children.append(child1)
             children.append(child2)
+        else:
+            children.append(p1)
+            children.append(p2)
 
     return np.array(children)
 
@@ -115,7 +120,7 @@ def get_bridge_locations(level, box, doors):
     # placeholder for list of doors
     surfacemap = get_surface_type_map(level, box)
     doordummy = np.argwhere(surfacemap == 2)
-    idxs = np.random.randint(len(doordummy), size=10)
+    idxs = np.random.randint(len(doordummy), size=5)
     doors = doordummy[idxs]
 
     # evaluate initial population
@@ -124,22 +129,25 @@ def get_bridge_locations(level, box, doors):
     # average_fitness = -np.inf
     # worst_fitness = np.inf
 
-    num_iterations = 1000
+    num_iterations = 10
     i = 0
     consecutive_same_best = 0
-    while i < num_iterations and consecutive_same_best < 30:
+    while i < num_iterations and consecutive_same_best < 5:
         # generate offspring
         selected_parents = selection(sorted_candidates, sorted_fitness)
         offspring = crossover(selected_parents)
         offspring = mutation(offspring, waterpoints)
 
         # new_population = np.append(sorted_candidates, offspring)
+        print(offspring.shape)
+        print(sorted_candidates.shape)
+
         new_population = np.append(sorted_candidates, offspring, axis=0)
 
         # calculate fitness of new population
         sorted_candidates, sorted_fitness = sort_by_fitness(new_population, doors)
-        sorted_candidates = sorted_candidates[:50]
-        sorted_fitness = sorted_fitness[:50]
+        sorted_candidates = sorted_candidates[:20]
+        sorted_fitness = sorted_fitness[:20]
 
         # determine if population has converged
         new_best = sorted_fitness[0]
@@ -147,7 +155,8 @@ def get_bridge_locations(level, box, doors):
             consecutive_same_best += 1
         else:
             consecutive_same_best = 0
-        best_fitness = new_best
+        if new_best > best_fitness:
+            best_fitness = new_best
 
         print("Best fitness found: ")
         print(best_fitness)
@@ -156,20 +165,36 @@ def get_bridge_locations(level, box, doors):
     return sorted_candidates[0]
 
 def find_bridge_box(level, box, bridge):
-    return (bridge[0], 50, bridge[0])
+    coords = []
+    surfacemap = get_surface_type_map(level, box)
 
+    first_grass_n = np.argwhere(surfacemap[bridge[0,]] == 2)
+    first_grass_e = np.argwhere(surfacemap[bridge[1,]] == 2)
+    first_grass_s = np.argwhere(surfacemap[bridge[0,]] == 2)
+    first_grass_w = np.argwhere(surfacemap[bridge[0,]] == 2)
+
+    is first_grass_e - first_grass_w > first_grass_n - first_grass_s:
+        horizontal = True
+        for step in range(box.minx, box.maxx):
+            coords.append([step, bridge[1]])
+
+    else:
+        horizontal = False 
+        for step in range(box.minz, box.maxz):
+            coords.append([bridge[0], step])
+    return coords
 
 def place_bridges(level, box, doors):
     bridge_coords = get_bridge_locations(level, box, doors)
     
     # split candidate in the 3 bridge locations
     bridge_loca = np.split(bridge_coords, 3)
-    print(bridge_loca)
-    #for each bridge, calculcate the distance to each door
-    for bridge in range(len(bridge_loca)):
+    
+    # find the rest of the bridgebox for each bridge
+    for bridge in bridge_loca:
         box_coords = find_bridge_box(level, box, bridge)
-        for (x,y,z) in box_coords:
-            utilityFunctions.setBlock(level, (1,0), x, y, z)
+
+        
 
 def perform(level, box, options):
     place_bridges(level, box, [])
