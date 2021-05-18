@@ -16,8 +16,45 @@ inputs = (
 	("Creators: Koen, Elin, Tim, Sem, Jerryyyyyyyy", "label")
 	)
 
+def bully_smallest(lst, max_small):
+    potentials = []
+    for i in range(len(lst)):
+        if lst[i] < max_small:
+            for _ in range(max_small - lst[i]):
+                potentials.append(i)
+    
+    if len(potentials) == 0:
+        return False
+
+    bullied = random.randint(0, len(potentials) - 1)
+    lst[potentials[bullied]] += 1
+    return True
+
 def partition(total, min_part, max_part):
-    partit = []#TODO
+    old_total = total 
+    while(total != 0):
+        total = old_total
+        partit = []
+        while total > 10:
+            rng = random.randint(min_part, max_part)
+            total -= rng
+            partit.append(rng)
+
+        if total > 5:
+            partit.append(total)
+            total = 0
+
+        else:
+            patience = 5
+            bullied = True
+            while (total != 0 and bullied and patience > 0):
+                bullied = bully_smallest(partit, 7)
+                if bullied:
+                    total -= 1
+                patience -= 1
+            #end while
+        #end else
+    #end while
     return partit
 
 # Stores data about one building
@@ -56,7 +93,7 @@ class Settlement:
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
-    self.edge = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
+    self.domain = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
     self.doors = [] #list of all door locations
 
 
@@ -175,12 +212,12 @@ class Settlement:
     self.__generate_canal(P0, crosspoint)
 
 
-  # Update edge map; 1 = edge
-  def __update_edge(self, x, z):
+  # Update domain map; 1 = belongs to settlement
+  def __update_domain(self, x, z):
     for i in range(-1, 2):
       for j in range(-1, 2):
         if self.__in_box(x+i, z+j):
-          self.edge[x+i][z+j] = 1
+          self.domain[x+i][z+j] = 1
   
 
   # Generate canals surrounding the settlement, has a gear-like shape
@@ -230,8 +267,6 @@ class Settlement:
         P1 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
       elif alpha == R2:
         P2 = (x_outer, y_outer, z_outer) if outer else (x_inner, y_inner, z_inner)
-            
-      self.__update_edge(x_outer, z_outer)
 
       length += 1
     
@@ -274,13 +309,15 @@ class Settlement:
     self.max_radius = np.full(360, outer_r, dtype=int)  # Max radius at which water is found per alpha
 
     for r in range(1, outer_r):
-      for alpha in range(0, 360):
-        if r > self.max_radius[alpha]:  # Skip, water found
-          continue
-        
+      for alpha in range(0, 360):     
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
-        
+
+        self.__update_domain(x, z)
+
+        if r > self.max_radius[alpha]:  # Skip, water found
+          continue
+
         # Manual placement of 3x3 grid
         for i in range(-1, 2):
           for j in range(-1, 2):
@@ -461,18 +498,38 @@ class Settlement:
   def __generate_buildings(self):
     for building in self.buildings:
       facade_type = random.randint(0, 3)
-      building.multiple = False        #FIXME
+      #building.multiple = False        #FIXME
+
       if building.multiple == True:
         if building.width > building.length:
-          pass#TODO
+          partit = partition(building.width, 5, 10)
+          print("partit = ", partit)
+          cum_p = 0
+          for p in partit:
+            base = (building.P[0] + cum_p, building.P[1], building.P[2])
+            print ("building house at", base)
+            cum_p += p
+            door = place_house(self.level, p, 4, building.length, base, building.front, 3, facade_type)
+        #end if
           
         else:
-          pass#TODO
+          partit = partition(building.length, 5, 10)
+          print("partit = ", partit)
+          cum_p = 0
+          for p in partit:
+            base = building.P
+            base = (building.P[0], building.P[1], building.P[2] + cum_p)
+            print ("building house at", base)
+            cum_p += p
+            door = place_house(self.level, building.width, 4, p, base, building.front, 3, facade_type)
+        #end else
+        #break#FIXME
+      #end if multiple
       else:
         if building.front % 2 == 0:
-          door = place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.width, 4, building.length, building.P, building.front, 3, facade_type)
         else:
-          door = place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.length, 4, building.width, building.P, building.front, 3, facade_type)
       door[0] -= self.box.minx
       door[1] -= self.box.minz
       self.doors.append(door)
