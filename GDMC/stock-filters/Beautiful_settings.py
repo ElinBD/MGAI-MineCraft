@@ -64,3 +64,7 @@ POLE = (139,0)            # Cobblestone wall
 WATER_GATE = (101,0)      # Iron bars
 DIAMOND = (57,0)
 OUTER_BRIDGE = (44,5)     # Stone brick slab
+
+RED_STONE = (152,0)       # Redstone block
+BLUE_STONE = (22,0)       # LapisLazuli block
+WHITE_STONE = (42,0)      # Block of iron

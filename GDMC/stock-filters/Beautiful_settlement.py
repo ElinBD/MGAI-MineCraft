@@ -325,7 +325,7 @@ class Settlement:
 
   # Generate entrances into the outer walls, but only on the inner_r radius
   def __entrances(self, inner_r, outer_r):
-    curr_len = MIN_DIST_ENTRANCE
+    curr_len = MIN_DIST_ENTRANCE-10
 
     for alpha in range(0, 360):
       if self.__is_suitable(alpha, inner_r):  # Suitable spot for an entrance
@@ -337,6 +337,7 @@ class Settlement:
             self.__place_grid(AIR, x, z, 1)   # Make gap into the wall
             self.__place_grid(AIR, x, z, 2)
             self.__place_grid(AIR, x, z, 3)
+            self.__place_grid(AIR, x, z, 4)
 
           # Create bridge from entrance to the outside
           for r in range(inner_r-3, inner_r+4):
@@ -585,6 +586,23 @@ class Settlement:
           self.height_map[x][z] -= 1
 
 
+  # EASTER EGG: generate the three stones (blue, red, white) of Leiden
+  def __three_stones(self):
+    pos_loc = []
+    for x in range(self.domain.shape[0]):
+      for z in range(self.domain.shape[1]):
+        if self.domain[x][z] and not self.water[x][z]:  # Should be inside the settlement
+          y = self.__get_height(x, z)
+          if self.__get_block(x, y, z) == ROAD[0]:
+            pos_loc.append((x,y,z))  # Possible location for the stones
+    
+    loc = random.sample(pos_loc, k=3)  # 3 stones, so sample three locations
+    
+    self.__place_block(RED_STONE, loc[0][0], loc[0][1], loc[0][2])    # RED stone
+    self.__place_block(BLUE_STONE, loc[1][0], loc[1][1], loc[1][2])   # BLUE stone
+    self.__place_block(WHITE_STONE, loc[2][0], loc[2][1], loc[2][2])  # WHITE stone
+
+
   # Generates the settlement
   def generate(self):
     # Radius of outer and inner circles, forming the gear-shape 
@@ -619,6 +637,9 @@ class Settlement:
 
     print "Lower water level.."
     self.__lower_water_level(outer_r)  # Lower water level by one block
+
+    print "Generate secret stuff.."
+    self.__three_stones()   # The three stones of Leiden
 
     print "\nGeneration completed!"
 
