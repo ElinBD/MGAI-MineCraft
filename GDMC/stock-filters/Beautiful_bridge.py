@@ -10,17 +10,22 @@ inputs = (
 	("Bridge placer", "label"),
 	("Creator: Elin", "label"))
 
-def get_waterpoints(level, box):
+# def get_waterpoints(level, box):
+#     """Get all coordinates where blocktype is water"""
+#     surfacemap = get_surface_type_map(level, box)
+#     waterpoints = np.argwhere(surfacemap == 9)
+#     return waterpoints
+
+def get_waterpoints(canal_map):
     """Get all coordinates where blocktype is water"""
-    surfacemap = get_surface_type_map(level, box)
-    waterpoints = np.argwhere(surfacemap == 9)
+    waterpoints = np.argwhere(canal_map == True)
     return waterpoints
 
 def generate_candidates(waterpoints):
     """Generate 50 candidates where each candidates contains the x,z coordinates
         of 2 bridges."""
     num_bridges = 3
-    num_candidates = 20
+    num_candidates = 10
 
     candidates = []
     for i in range(num_candidates):
@@ -37,7 +42,7 @@ def fitness_function(candidate, doors):
         return np.linalg.norm(door - candidate[bridge])
     
     # split candidate in the 3 bridge locations
-    bridge_loca = np.split(candidate, len(candidate)/doors.shape[1])
+    bridge_loca = np.split(candidate, 3)
 
     #for each bridge, calculcate the distance to each door
     dists = np.empty((len(bridge_loca), len(doors)))
@@ -113,15 +118,15 @@ def mutation(offspring, waterpoints):
 
     return offspring
 
-def get_bridge_locations(level, box, doors):
-    waterpoints = get_waterpoints(level, box)
+def get_bridge_locations(level, box, canal_map, doors):
+    waterpoints = get_waterpoints(canal_map)
     candidates = generate_candidates(waterpoints)
 
-    # placeholder for list of doors
-    surfacemap = get_surface_type_map(level, box)
-    doordummy = np.argwhere(surfacemap == 2)
-    idxs = np.random.randint(len(doordummy), size=5)
-    doors = doordummy[idxs]
+    # # placeholder for list of doors
+    # surfacemap = get_surface_type_map(level, box)
+    # doordummy = np.argwhere(surfacemap == 2)
+    # idxs = np.random.randint(len(doordummy), size=5)
+    # doors = doordummy[idxs]
 
     # evaluate initial population
     sorted_candidates, sorted_fitness = sort_by_fitness(candidates, doors)
@@ -129,10 +134,10 @@ def get_bridge_locations(level, box, doors):
     # average_fitness = -np.inf
     # worst_fitness = np.inf
 
-    num_iterations = 10
+    num_iterations = 100
     i = 0
     consecutive_same_best = 0
-    while i < num_iterations and consecutive_same_best < 5:
+    while i < num_iterations and consecutive_same_best < 15:
         # generate offspring
         selected_parents = selection(sorted_candidates, sorted_fitness)
         offspring = crossover(selected_parents)
@@ -164,37 +169,74 @@ def get_bridge_locations(level, box, doors):
 
     return sorted_candidates[0]
 
-# def find_bridge_box(level, box, bridge):
-#     coords = []
-#     surfacemap = get_surface_type_map(level, box)
+def find_bridge_box(level, box, bridge):
+    bridgex = bridge[0] + box.minx
+    bridgez = bridge[1] + box.minz
+    y = box.maxy
 
-#     first_grass_n = np.argwhere(surfacemap[bridge[0,]] == 2)
-#     first_grass_e = np.argwhere(surfacemap[bridge[1,]] == 2)
-#     first_grass_s = np.argwhere(surfacemap[bridge[0,]] == 2)
-#     first_grass_w = np.argwhere(surfacemap[bridge[0,]] == 2)
+    x_bridge = [[bridgex, bridgez]]
+    i = 1
+    while True:
+        x_bridge.append([bridgex+i, bridgez])
+        if level.blockAt(bridgex+i, y-1, bridgez) != 9:
+            break
+        i += 1
 
-#     is first_grass_e - first_grass_w > first_grass_n - first_grass_s:
-#         horizontal = True
-#         for step in range(box.minx, box.maxx):
-#             coords.append([step, bridge[1]])
+    i = -1
+    while True:
+        x_bridge.append([bridgex+i, bridgez])
+        if level.blockAt(bridgex+i, y-1, bridgez) != 9:
+            break
+        i -= 1
 
-#     else:
-#         horizontal = False 
-#         for step in range(box.minz, box.maxz):
-#             coords.append([bridge[0], step])
-#     return coords
+    z_bridge = [[bridgex, bridgez]]
+    i = 1
+    while True:
+        z_bridge.append([bridgex, bridgez + i])
+        if level.blockAt(bridgex, y-1, bridgez + i) != 9:
+            break
+        i += 1
 
-def place_bridges(level, box, doors):
-    bridge_coords = get_bridge_locations(level, box, doors)
+    i = -1
+    while True:
+        z_bridge.append([bridgex, bridgez + i])
+        if level.blockAt(bridgex, y-1, bridgez + i) != 9:
+            break
+        i -= 1
+
+    if len(z_bridge) < len(x_bridge):
+        def myFunc(e):
+            return e[1]   
+        z_bridge.sort(key=myFunc)
+        return z_bridge
+    else:
+        def myFunc(e):
+            return e[0]   
+        x_bridge.sort(key=myFunc)
+        return x_bridge
+
+
+def place_bridges(level, box, water, doors):
+    bridge_coords = get_bridge_locations(level, box, water, doors)
     
     # split candidate in the 3 bridge locations
     bridge_loca = np.split(bridge_coords, 3)
     
     # # find the rest of the bridgebox for each bridge
-    # for bridge in bridge_loca:
-    #     box_coords = find_bridge_box(level, box, bridge)
+    for bridge in bridge_loca:
+        box_coords = find_bridge_box(level, box, bridge)
+        y = box.maxy-1
+        print(box_coords)
+        for count, value in enumerate(box_coords):
+            x = value[0]
+            z = value[1]
+            if count < round(len(box_coords)/2,5):
+                y = y + 1
+            elif count > len(box_coords) - round(len(box_coords)/2,5):
+                y = y - 1
 
+            utilityFunctions.setBlock(level, (1,0), x, y, z)
         
 
 def perform(level, box, options):
-    place_bridges(level, box, [])
+    place_bridges(level, box, [], [])

@@ -1,5 +1,6 @@
 # Generates a beautiful settlement given a level and box
 
+from numpy.lib.function_base import place
 import utilityFunctions as utility
 import numpy as np
 import random
@@ -10,6 +11,7 @@ from Beautiful_meta_analysis import get_height_map, get_biome_map, get_surface_t
 from Beautiful_starting_point import find_starting_point
 from Beautiful_terraforming import flatten_box
 from Beautiful_house import place_house
+from Beautiful_bridge import place_bridges
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
@@ -93,6 +95,7 @@ class Settlement:
     self.buildings = []  # Plots of the buildings
     self.max_radius = []
     self.water = np.zeros_like(self.height_map, dtype=bool)   # Denotes where the canals are
+    self.inner_canals = np.zeros_like(self.height_map, dtype=bool)
     self.domain = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
     self.doors = [] #list of all door locations
 
@@ -164,6 +167,13 @@ class Settlement:
         if self.__in_box(x+i, z+j):
           self.water[x+i][z+j] = True   # Update where the canals are located
 
+  # Update the water-np-array
+  def __update_inner_canals(self, x, z):
+    for i in range(-1, 2):
+      for j in range(-1, 2):
+        if self.__in_box(x+i, z+j):
+          self.inner_canals[x+i][z+j] = True   # Update where the canals are located
+
 
   # Flatten area where the settlement will be
   def __flatten(self, outer_r):
@@ -195,6 +205,7 @@ class Settlement:
       self.__place_grid(settings.WATER, block[0], block[2], 0)
       self.__place_grid(settings.AIR, block[0], block[2], 1)
       self.__update_water(block[0], block[2])
+      self.__update_inner_canals(block[0], block[2])
     
       y = self.__get_height(block[0], block[2])+2
       if self.__get_block(block[0], y, block[2]) == settings.OUTER_WALL[0]:
@@ -533,6 +544,7 @@ class Settlement:
       door[0] -= self.box.minx
       door[1] -= self.box.minz
       self.doors.append(door)
+    self.doors = np.array(self.doors)
 
 
   # Check whether a 3x3 grid is available and that there is no light
@@ -589,6 +601,9 @@ class Settlement:
           self.height_map[x][z] -= 1
 
 
+  def __generate_bridges(self):
+    place_bridges(self.level, self.box, self.inner_canals, self.doors)
+
   # Generates the settlement
   def generate(self):
     # Radius of outer and inner circles, forming the gear-shape 
@@ -615,11 +630,14 @@ class Settlement:
     print "Generating buildings.."
     self.__generate_buildings()
 
-    print "Generating street lights.."
-    self.__generate_street_light(outer_r)  # Generate street lights
+    # print "Generating street lights.."
+    # self.__generate_street_light(outer_r)  # Generate street lights
 
-    print "Lower water level.."
-    self.__lower_water_level(outer_r)  # Lower water level by one block
+    # print "Lower water level.."
+    # self.__lower_water_level(outer_r)  # Lower water level by one block
+
+    print "Generating bridges.."
+    self.__generate_bridges()  # Lower water level by one block
 
     print "\nGeneration completed!"
 
