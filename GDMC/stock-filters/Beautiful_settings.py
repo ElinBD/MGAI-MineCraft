@@ -40,8 +40,6 @@ MIN_WIDTH_MULT = 20
 MAX_WIDTH_MULT = 35
 
 
-
-
 CANAL_VALUE = 100  # Added value to direct the buildings nearby a canal to it
 
 
@@ -52,7 +50,8 @@ SPARSITY = 9    # Area (NxN) where at most one street light can be
 
 # ==== Outer wall specific ====
 LEN_WALL = 7
-P_ENTRANCE = 0.4  # Probability to generate an entrance in the outer wall
+P_ENTRANCE = 0.3  # Probability to generate an entrance in the outer wall
+MIN_DIST_ENTRANCE = 100  # Minimum distance between two entrances, in terms of degrees in [0,360]
 
 
 # ==== Block-specifications (with the exception of the buildings) ====
@@ -62,5 +61,6 @@ GRASS = (2,0)
 ROAD = (45,0)             # Bricks
 OUTER_WALL = (98,0)       # Stone bricks
 POLE = (139,0)            # Cobblestone wall
-WATER_GATE = (101, 0)     # Iron bars
+WATER_GATE = (101,0)      # Iron bars
 DIAMOND = (57,0)
+OUTER_BRIDGE = (44,5)     # Stone brick slab

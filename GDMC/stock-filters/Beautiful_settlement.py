@@ -274,13 +274,13 @@ class Settlement:
 
     for r in range(1, outer_r):
       for alpha in range(0, 360):
+        x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+        z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+        
         self.__update_domain(x, z)
 
         if r > self.max_radius[alpha]:  # Skip, water found
           continue
-        
-        x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
-        z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
         
         # Manual placement of 3x3 grid
         for i in range(-1, 2):
@@ -298,20 +298,52 @@ class Settlement:
           self.max_radius[alpha] = r  # Inner ring found for current alpha, update max_radius
         
 
+  # Check whether there is a water gate nearby the given block, if so return True
+  def __water_gate(self, x, y, z):
+    for dx in range(-5, 6):
+      for dy in range(-5, 6):
+        for dz in range(-5, 6):
+          if self.__in_box(x+dx, z+dz):
+            if self.__get_block(x+dx, y+dy, z+dz) == WATER_GATE[0]:
+              return True
+    return False  # No water gate found
+  
+
+  # Check whether current spot is suitable for an entrance
+  # Entrances should be on the inner ring of the wall and not near water gates
+  def __is_suitable(self, alpha, inner_r):
+    for i in range(-8, 9):
+      if 0 <= alpha + i < 360:  # Should be in array self.max_radius
+        x = int(self.x_center_box + inner_r * math.cos(math.pi*alpha/180))
+        z = int(self.z_center_box + inner_r * math.sin(math.pi*alpha/180))
+        y = self.__get_height(x, z)
+
+        if self.max_radius[alpha+i] > inner_r or self.__water_gate(x, y+2, z):
+          return False
+    return True
+  
+
   # Generate entrances into the outer walls, but only on the inner_r radius
   def __entrances(self, inner_r, outer_r):
-    curr_len = MIN_LENGTH_C
+    curr_len = MIN_DIST_ENTRANCE
 
     for alpha in range(0, 360):
-      if self.max_radius[alpha] < outer_r and self.max_radius[alpha-1] < outer_r and self.max_radius[alpha+1] < outer_r:  # Suitable spot for an entrance
-        if curr_len >= MIN_LENGTH_C and random.randint(0,1) <= P_ENTRANCE:  # Enough distance between each entrance
+      if self.__is_suitable(alpha, inner_r):  # Suitable spot for an entrance
+        if curr_len >= MIN_DIST_ENTRANCE and random.randint(0,1) <= P_ENTRANCE:  # Enough distance between each entrance
           for r in range(1, inner_r+3):
             x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
             z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
-            self.__place_grid(AIR, x, z, 1)
+            self.__place_grid(AIR, x, z, 1)   # Make gap into the wall
             self.__place_grid(AIR, x, z, 2)
             self.__place_grid(AIR, x, z, 3)
+
+          # Create bridge from entrance to the outside
+          for r in range(inner_r-3, inner_r+4):
+            x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+            z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+
+            self.__place_grid(OUTER_BRIDGE, x, z, 1)   # Make gap into the wall
 
           curr_len = 0
       curr_len += 1
