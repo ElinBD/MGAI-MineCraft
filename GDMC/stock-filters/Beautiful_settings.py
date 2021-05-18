@@ -50,13 +50,22 @@ SPARSITY = 9    # Area (NxN) where at most one street light can be
 
 # ==== Outer wall specific ====
 LEN_WALL = 7
-P_ENTRANCE = 0.3  # Probability to generate an entrance in the outer wall
+P_ENTRANCE = 0.9  # Probability to generate an entrance in the outer wall
 MIN_DIST_ENTRANCE = 100  # Minimum distance between two entrances, in terms of degrees in [0,360]
+
+
+# ==== Greenery specific ====
+MAX_HEIGHT_TREE = 8
+MIN_HEIGHT_TREE = 4
+P_LEAVES = [1.0, 1.0, 0.8, 0.8, 0.8]   # Probability at every recursive depth to generate leaves
+P_DIRT = 0.3
+P_TREE = 0.3   # Probability to generate tree
 
 
 # ==== Block-specifications (with the exception of the buildings) ====
 AIR = (0,0)
 WATER = (9,0)
+DIRT = (3,0)
 GRASS = (2,0)
 ROAD = (45,0)             # Bricks
 OUTER_WALL = (98,0)       # Stone bricks
@@ -64,6 +73,9 @@ POLE = (139,0)            # Cobblestone wall
 WATER_GATE = (101,0)      # Iron bars
 DIAMOND = (57,0)
 OUTER_BRIDGE = (44,5)     # Stone brick slab
+
+LOG = (17,0)
+LEAVE = (18,4)
 
 RED_STONE = (152,0)       # Redstone block
 BLUE_STONE = (22,0)       # LapisLazuli block

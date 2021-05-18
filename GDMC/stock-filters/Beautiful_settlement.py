@@ -314,8 +314,8 @@ class Settlement:
   def __is_suitable(self, alpha, inner_r):
     for i in range(-8, 9):
       if 0 <= alpha + i < 360:  # Should be in array self.max_radius
-        x = int(self.x_center_box + inner_r * math.cos(math.pi*alpha/180))
-        z = int(self.z_center_box + inner_r * math.sin(math.pi*alpha/180))
+        x = int(self.x_center_box + inner_r * math.cos(math.pi*(alpha+i)/180))
+        z = int(self.z_center_box + inner_r * math.sin(math.pi*(alpha+i)/180))
         y = self.__get_height(x, z)
 
         if self.max_radius[alpha+i] > inner_r or self.__water_gate(x, y+2, z):
@@ -586,6 +586,71 @@ class Settlement:
           self.height_map[x][z] -= 1
 
 
+  # Determine whether there is space for a tree at (x,z)
+  def __space_tree(self, x, z):
+    for dx in range(-2, 3):
+      for dz in range(-2, 3):
+        y = self.__get_height(x+dx, z+dz)
+        if not self.__get_block(x+dx, y+1, z+dz) == AIR[0]:  # Space should be free
+          return False
+        if not self.__get_block(x+dz, y, z+dz) == ROAD[0]:  # Tree cant be on edge
+          return False
+    return True
+
+
+  # Recursively generate leaves on the tree
+  def __generate_leave(self, x, y, z, depth):
+    if depth >= len(P_LEAVES) or not self.__get_block(x, y, z) == AIR[0]:
+      return  # Max recursive depth reached
+    
+    if random.randint(0,1) <= P_LEAVES[depth]:  # Generate the leave
+      self.__place_block(LEAVE, x, y, z)
+
+      self.__generate_leave(x+1, y, z, depth+1)
+      self.__generate_leave(x-1, y, z, depth+1)
+
+      self.__generate_leave(x, y+1, z, depth+1)
+      self.__generate_leave(x, y-1, z, depth+1)
+
+      self.__generate_leave(x, y, z+1, depth+1)
+      self.__generate_leave(x, y, z-1, depth+1)
+
+            
+  # Generate tree at (x,z)
+  def __generate_tree(self, x, z):
+    y = self.__get_height(x, z) + 1
+    height = random.randint(MIN_HEIGHT_TREE, MAX_HEIGHT_TREE)
+
+    # Place logs of tree
+    for i in range(height):
+      self.__place_block(LOG, x, y+i, z)
+
+    # Recursively place leaves
+    self.__generate_leave(x, y+height, z, 0)
+
+
+  # Generate trees, bushes and grass in the settlement
+  def __generate_greenery(self, outer_r):
+    for r in range(1, outer_r):
+      for alpha in range(0, 360):
+        if r > self.max_radius[alpha]:  # Skip
+          continue
+        
+        x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+        z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+        if not self.water[x][z] and self.__space_tree(x, z) and random.uniform(0,1) <= P_TREE:
+          self.__place_block(DIRT, x, self.__get_height(x, z), z)
+
+          for dx in range(-1, 2):
+            for dz in range(-1, 2):
+              y = self.__get_height(x+dx, z+dz)
+              if random.uniform(0,1) <= P_DIRT and self.__get_block(x+dz, y, z+dz) == ROAD[0]:
+                self.__place_block(DIRT, x+dx, y, z+dz) 
+
+          self.__generate_tree(x, z)
+          alpha += 20  # Make sure that there is sufficient space between every tree
+
+
   # EASTER EGG: generate the three stones (blue, red, white) of Leiden
   def __three_stones(self):
     pos_loc = []
@@ -638,7 +703,10 @@ class Settlement:
     print "Lower water level.."
     self.__lower_water_level(outer_r)  # Lower water level by one block
 
-    print "Generate secret stuff.."
+    print "Generating greenery.."
+    self.__generate_greenery(outer_r)  # Generate trees, bushes and grass 
+
+    print "Generating secret stuff.."
     self.__three_stones()   # The three stones of Leiden
 
     print "\nGeneration completed!"
