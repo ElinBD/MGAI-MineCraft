@@ -11,15 +11,16 @@ import math
 inputs = (
 	("Canal House Generator", "label"),
 	("Creator: Koen", "label"),
-    ("length (x)", (7, 4, 128)),
-    ("height (y)", (5, 3, 128)),
-    ("length (z)", (12, 4, 128)),
+    ("length (x)", (8, 0, 256)),
+    ("height (y)", (4, 0, 256)),
+    ("length (z)", (8, 0, 256)),
     ("offset (x)", (0, -256, 256)),
-    ("offset (y)", (4, 0, 256)),
+    ("offset (y)", (3, 0, 256)),
     ("offset (z)", (0, -256, 256)),
     ("door location (N=0, W=1, S=2, E=3)", (0, 0, 3)),
     ("number of floors", (2, 1, 10)),
-    ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3))
+    ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3)),
+    ("Sem", (0, 0, 1))
 )
 
 
@@ -133,89 +134,97 @@ def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z,
     elif facade_type == 2: # Lit. translation: clock/neck type facade
         small_stairs_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Side of facade
         clock_facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z) # Center of facade
+    
+    # Place windows in facade
+    for y in range(base_y+height_y, y_r-2):
+        utilityFunctions.setBlock(level, pallete.window, x_center, y, base_z)
 
+    for y in range(base_y+height_y, y_r-2):
+        utilityFunctions.setBlock(level, pallete.window, x_west, y, base_z)
 
-def windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, total_height): # This function currently assumes the building has an uneven width
-    x_center = base_x + length_x/2
+def ground_floor_windows(level, pallete, width, height):
+    print("not to Sem")
+    z = 0
+    if width <= 6:
+        for x in [1,width-4]:
+            for y in range(2, height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)#DONE
+    elif width <= 8:
+        #width = 7 or 8
+        for x in [1,width-2]:
+            for y in range(2, height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)
+    else:
+        #width = 9 or 10
+        for x in [1, 2, width - 3, width-2]:
+            for y in range(2, height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)
+
+def other_floor_windows(level, pallete, width, height, offset):
+    print("not to Sem")
+    z = 0
+    if width <= 6:
+        for x in [1,width-2]:
+            for y in range(offset + 2, offset + height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)#DONE
+    elif width == 7:
+        for x in [1, 3, width-2]:
+            for y in range(offset + 2, offset + height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)#DONE
+    elif width == 8:
+        #width = 7 or 8
+        for x in [1, 2, width-3, width-2]:
+            for y in range(offset + 2, offset + height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)
+    else:
+        #width = 9 or 10
+        for x in [1, 2, 4, width - 5, width - 3, width-2]:
+            for y in range(offset + 2, offset + height):
+                utilityFunctions.setBlock(level, pallete.window, x, y, z)
+
+def windows(level, pallete, length_x, height_y, no_floors, window_width, door_x):
+    print("to Sem")
+    x_center = length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
-    window_max_height = height_y-3
+    window_max_height = height_y-2 # window height is depending on floor height
 
-    if height_y > 4:
-        utilityFunctions.setBlock(level, (4,0), door_x, base_y+2, base_z) # Window above the door
+    for window_x in range(1, x_center+1, window_width+1):
+        for i in range(window_x, min(window_x+window_width, x_center+1)):
+            if i == door_x-1 or i == door_x+1:
+                pass
 
-    for i in range(base_x+1, length_x, 2): # Windows on ground level
-        if i != door_x:
-            for j in range(base_y, base_y+window_max_height):
-                utilityFunctions.setBlock(level, (4,0), i, j+1, base_z)
+            #elif i == door_x: # If on same place as the window
+            else:
+                for j in range(2, 1+window_max_height+1):
+                    utilityFunctions.setBlock(level, pallete.window, i, j, 0)
 
-    y_r = base_y + height_y + 1
+    for window_x in range(length_x-2, x_west, -(window_width+1)):
+        for i in range(window_x, window_x-min(window_width, window_x-x_west), -1):
+            if i == door_x-1 or i == door_x+1:
+                pass
+
+            else:
+                for j in range(2, 1+window_max_height+1):
+                    utilityFunctions.setBlock(level, pallete.window, i, j, 0)
+
+    for j in range(3, 1+window_max_height+1):
+        utilityFunctions.setBlock(level, pallete.door_window, door_x, j, 0)
+
+
+    y_r = 1 + height_y + 1
     for floors in range(1, no_floors): # Windows on higher floors
-        for i in range(base_x+1, length_x, 2):
-            for j in range(window_max_height):
-                # print y_r+j
-                utilityFunctions.setBlock(level, (4,0), i, y_r+j, base_z)
+        for window_x in range(1, x_center+1, window_width+1):
+            for i in range(window_x, min(window_x+window_width, x_center+1)):
+                for j in range(window_max_height):
+                    utilityFunctions.setBlock(level, pallete.window, i, y_r+j, 0)
+
+        for window_x in range(length_x-2, x_west, -(window_width+1)):
+            for i in range(window_x, window_x-min(window_width, window_x-x_west), -1):
+                for j in range(window_max_height):
+                    utilityFunctions.setBlock(level, pallete.window, i, y_r+j, 0)
+
         y_r += height_y
-
-    # Do something with temp_base_y and the total_height of the building
-    y_r = total_height-2
-    for x in range(x_center, base_x, -2):
-        for y in range(min(window_max_height, y_r-(temp_base_y+2))):
-            utilityFunctions.setBlock(level, (20,0), x, base_y+temp_base_y+y+1, base_z)
-        y_r -=2
-
-
-    y_r = total_height-2
-    for x in range(x_west, base_x + length_x - 1, +2):
-        for y in range(min(window_max_height, y_r-(temp_base_y+2))):
-            utilityFunctions.setBlock(level, (20,0), x, base_y+temp_base_y+y+1, base_z)
-        y_r -=2
-
-
-def windows_beta(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, total_height): # This function currently assumes the building has an uneven width
-    x_center = base_x + length_x/2
-    x_west = x_center - 1 if length_x % 2 == 0 else x_center
-
-    window_max_height = height_y-3 # Depending on floor height. We want windows to be one block above the floor and one block below the ceiling, at most.
-    n_windows = length_x//2 # Number of windows we would want on this building for a nice look
-    if length_x % 2 == 0:
-        n_windows -= 1 # We'll just make the middle windows larger
-
-    window_width = 1 # Generally, window width is just one
-
-    if n_windows > 4: # Hardcoded: larger windows when building gets wider
-        window_width = length_x//4
-
-    if height_y > 4:
-        utilityFunctions.setBlock(level, (4,0), door_x, base_y+2, base_z) # Window above the door
-
-    for i in range(base_x+1, length_x, 2): # Windows on ground level
-        if i != door_x:
-            for j in range(base_y, base_y+window_max_height):
-                utilityFunctions.setBlock(level, (4,0), i, j+1, base_z)
-
-    y_r = base_y + height_y + 1
-    for floors in range(1, no_floors): # Windows on higher floors
-        for i in range(base_x+1, length_x, 2):
-            for j in range(window_max_height):
-                # print y_r+j
-                utilityFunctions.setBlock(level, (4,0), i, y_r+j, base_z)
-        y_r += height_y
-
-    # Do something with temp_base_y and the total_height of the building
-    y_r = total_height-2
-    for x in range(x_center, base_x, -2):
-        for y in range(min(window_max_height, y_r-(temp_base_y+2))):
-            utilityFunctions.setBlock(level, (20,0), x, base_y+temp_base_y+y+1, base_z)
-        y_r -=2
-
-
-    y_r = total_height-2
-    for x in range(x_west, base_x + length_x - 1, +2):
-        for y in range(min(window_max_height, y_r-(temp_base_y+2))):
-            utilityFunctions.setBlock(level, (20,0), x, base_y+temp_base_y+y+1, base_z)
-        y_r -=2
-
 
 def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
@@ -256,7 +265,6 @@ def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, bas
         y_r += 1
 
     return y_r-1
-
 
 def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z, stair_loc, top_offset):
     x = base_x#z-directional wall
@@ -335,7 +343,7 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
 #  @ level: Minecraft world
 #  @ box: selected box by mcedit
 #  @ options: user defined inputs from mcedit
-def build_house(length_x, height_y, length_z, no_floors, facade_type):
+def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type, Sem):
     base_x = 0
     base_y = 1
     base_z = 0
@@ -345,15 +353,13 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
 
     pallete = Pallete()
 
-    #level = MCSchematic((box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))#working object
-
     #Walls:
     temp_base_y = base_y
     stair_loc = 0
     for i in range(no_floors):
         if i == no_floors - 1:#top most floor
             build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, stair_loc, 1)
-        else:#middel floor
+        else:#middel floors
             build_floor(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, stair_loc, 0)
         stair_loc += 2
         stair_loc %= 4
@@ -361,43 +367,83 @@ def build_house(length_x, height_y, length_z, no_floors, facade_type):
     temp_base_y -= height_y - 1
 
     #floor:
-    for x in range (base_x + 1, base_x + length_x - 1):
-        for z in range(base_z + 1, base_z + length_z - 1):
-            utilityFunctions.setBlock(level, pallete.floor, x, base_y-1, z)
+    for x in range (0, length_x):
+        for z in range(0, length_z):
+            utilityFunctions.setBlock(level, pallete.floor, x, 0, z)
 
-
-    #else:
-        #door in N/S section
+    #roof:
     y_r = build_roof(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z)
-    facade(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type) # TODO: maybe should return the total height of the building, so we can place windows accordingly in the facade front
-    door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
-    door_z = base_z #if door_loc == 1 else base_z + length_z - 1
-    #FIXME windows(level, box, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type, door_x, base_y, no_floors, y_r)
+    facade(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
 
-    #floor block underneeth door:
-    utilityFunctions.setBlock(level, pallete.floor, door_x, base_y - 1, door_z)
+    #door:
+    
+    door_z = 0
 
-    #clear blocks for the door:
-    utilityFunctions.setBlock(level, (0,0), door_x, base_y, door_z) #air
-    utilityFunctions.setBlock(level, (0,0), door_x, base_y + 1, door_z) #air
+    if Sem:
+        if length_x%2 == 0:
+            door_loc = random.randint(0, 1)
+            if door_loc:
+                door_x = base_x + 1
+            else:
+                door_x = length_x - 2
+        else:
+            door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
+    
+    else:
+        door_x = math.floor(length_x / 2) if length_x > 6 else length_x - 2
 
-    #setBlock(x, y, z,"acacia_door")
-    #place actual door:
-    # "acacia_door"
-    #utilityFunctions.setBlock(level, ("acacia_door", door_loc), door_x, base_y, door_z)
-    #utilityFunctions.setBlock(level, "acacia_door[half=upper]", door_x, base_y, door_z)
+        if length_x % 2 == 0 and length_x > 6:
+            rng = random.randint(0,1)
+            door_x -= rng
 
-    utilityFunctions.setBlock(level, (pallete.door, 1), door_x, base_y, door_z)
-    utilityFunctions.setBlock(level, (pallete.door, 1 + 8), door_x, base_y + 1, door_z)
+    door_rot = 1 if rotations % 2 == 0 else 3
+
+
+
+    #windows:
+    if Sem:
+        w1ndow = not bool((length_x-1)%2) # Determine is windows are divisible by 2, for windows of 1 wide
+        w2ndow = not bool((length_x-1)%3) # Determine is windows are divisible by 3, for windows of 2 wide
+        if w1ndow and w2ndow:
+            print("both possible")
+            wide_windows = random.randint(0, 1)
+            if wide_windows:
+                n_windows = length_x//2
+                window_width = 1
+            else:
+                n_windows = length_x//3
+                window_width = 2
+
+        elif w1ndow and not w2ndow: # Windows can only be one wide
+            n_windows = length_x//2
+            window_width = 1
+
+        elif w2ndow and not w1ndow: # Windows can only be two wide
+            n_windows = length_x//3
+            window_width = 2
+
+        else: # Other cases: windows can be neither, we have to improvise :)
+            n_windows = length_x//2
+            window_width = 1
+        windows(level, pallete, length_x, height_y, no_floors, window_width, door_x)
+
+    else:
+        ground_floor_windows(level, pallete, length_x, height_y)
+        for i in range(1, no_floors):
+            offset = height_y * i
+            other_floor_windows(level, pallete, length_x, height_y, offset)
+    #'''
     #source for door and bed rotations: https://github.com/abrightmoore/ProceduralSettlementsInMinecraft/blob/master/House.py
     #print("level:", level.size)
+
+    utilityFunctions.setBlock(level, (pallete.door, door_rot), door_x, base_y, door_z)
+    utilityFunctions.setBlock(level, (pallete.door, door_rot + 8), door_x, base_y + 1, door_z)
 
 
     return level, box, [door_x, door_z]
 
-
-def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type):
-    scheme, box, door_coords = build_house(length_x, height_y, length_z, no_floors, facade_type)
+def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type, Sem=True):
+    scheme, box, door_coords = build_house(length_x, height_y, length_z, rotations, no_floors, facade_type, Sem)
 
     if rotations % 2 == 0:
         rot_box = bx.BoundingBox((0,0,0),(box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))
@@ -425,7 +471,9 @@ def perform(level, box, options):
     rotations = options["door location (N=0, W=1, S=2, E=3)"]
     no_floors = options["number of floors"]
     facade_type = options["facade type (small stairs=0, large stairs=1, bell=2, flat=3)"]
-    place_house(level, length_x, height_y, length_z, (base_x, base_y, base_z), rotations, no_floors, facade_type)
+    Sem = options["Sem"]
+    bool_sem = Sem == 0
+    place_house(level, length_x, height_y, length_z, (base_x, base_y, base_z), rotations, no_floors, facade_type, bool_sem)
 
 	#TODO: windows, roof and facade top (different styles)
 

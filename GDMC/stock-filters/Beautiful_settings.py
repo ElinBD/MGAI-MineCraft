@@ -34,8 +34,8 @@ P_PLOT = 0.6  # Probability to place plot when it is available
 
 
 # PLOTS FOR MULTIPLE BUILDINGS
-MIN_DEPTH = 7
-MAX_DEPTH = 7
+MIN_DEPTH = 8
+MAX_DEPTH = 10
 MIN_WIDTH_MULT = 20
 MAX_WIDTH_MULT = 35
 
