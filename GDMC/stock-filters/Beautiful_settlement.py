@@ -303,16 +303,17 @@ class Settlement:
     curr_len = MIN_LENGTH_C
 
     for alpha in range(0, 360):
-      if self.max_radius[alpha] < outer_r and curr_len >= MIN_LENGTH_C and random.randint(0,1) <= P_ENTRANCE:
-        for r in range(1, inner_r+3):
-          x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
-          z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
+      if self.max_radius[alpha] < outer_r and self.max_radius[alpha-1] < outer_r and self.max_radius[alpha+1] < outer_r:  # Suitable spot for an entrance
+        if curr_len >= MIN_LENGTH_C and random.randint(0,1) <= P_ENTRANCE:  # Enough distance between each entrance
+          for r in range(1, inner_r+3):
+            x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
+            z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
-          self.__place_grid(AIR, x, z, 1)
-          self.__place_grid(AIR, x, z, 2)
-          self.__place_grid(AIR, x, z, 3)
+            self.__place_grid(AIR, x, z, 1)
+            self.__place_grid(AIR, x, z, 2)
+            self.__place_grid(AIR, x, z, 3)
 
-        curr_len = 0
+          curr_len = 0
       curr_len += 1
 
 
