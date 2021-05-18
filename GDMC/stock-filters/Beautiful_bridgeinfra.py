@@ -164,25 +164,25 @@ def get_bridge_locations(level, box, doors):
 
     return sorted_candidates[0]
 
-def find_bridge_box(level, box, bridge):
-    coords = []
-    surfacemap = get_surface_type_map(level, box)
+# def find_bridge_box(level, box, bridge):
+#     coords = []
+#     surfacemap = get_surface_type_map(level, box)
 
-    first_grass_n = np.argwhere(surfacemap[bridge[0,]] == 2)
-    first_grass_e = np.argwhere(surfacemap[bridge[1,]] == 2)
-    first_grass_s = np.argwhere(surfacemap[bridge[0,]] == 2)
-    first_grass_w = np.argwhere(surfacemap[bridge[0,]] == 2)
+#     first_grass_n = np.argwhere(surfacemap[bridge[0,]] == 2)
+#     first_grass_e = np.argwhere(surfacemap[bridge[1,]] == 2)
+#     first_grass_s = np.argwhere(surfacemap[bridge[0,]] == 2)
+#     first_grass_w = np.argwhere(surfacemap[bridge[0,]] == 2)
 
-    is first_grass_e - first_grass_w > first_grass_n - first_grass_s:
-        horizontal = True
-        for step in range(box.minx, box.maxx):
-            coords.append([step, bridge[1]])
+#     is first_grass_e - first_grass_w > first_grass_n - first_grass_s:
+#         horizontal = True
+#         for step in range(box.minx, box.maxx):
+#             coords.append([step, bridge[1]])
 
-    else:
-        horizontal = False 
-        for step in range(box.minz, box.maxz):
-            coords.append([bridge[0], step])
-    return coords
+#     else:
+#         horizontal = False 
+#         for step in range(box.minz, box.maxz):
+#             coords.append([bridge[0], step])
+#     return coords
 
 def place_bridges(level, box, doors):
     bridge_coords = get_bridge_locations(level, box, doors)
@@ -190,9 +190,9 @@ def place_bridges(level, box, doors):
     # split candidate in the 3 bridge locations
     bridge_loca = np.split(bridge_coords, 3)
     
-    # find the rest of the bridgebox for each bridge
-    for bridge in bridge_loca:
-        box_coords = find_bridge_box(level, box, bridge)
+    # # find the rest of the bridgebox for each bridge
+    # for bridge in bridge_loca:
+    #     box_coords = find_bridge_box(level, box, bridge)
 
         
 
