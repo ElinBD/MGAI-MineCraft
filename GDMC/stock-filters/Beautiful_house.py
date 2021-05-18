@@ -19,7 +19,8 @@ inputs = (
     ("offset (z)", (0, -256, 256)),
     ("door location (N=0, W=1, S=2, E=3)", (0, 0, 3)),
     ("number of floors", (2, 1, 10)),
-    ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3))
+    ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3)),
+    ("Sem", (0, 0, 1))
 )
 
 
@@ -142,6 +143,7 @@ def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z,
         utilityFunctions.setBlock(level, pallete.window, x_west, y, base_z)
 
 def ground_floor_windows(level, pallete, width, height):
+    print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-4]:
@@ -159,6 +161,7 @@ def ground_floor_windows(level, pallete, width, height):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
 
 def other_floor_windows(level, pallete, width, height, offset):
+    print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-2]:
@@ -178,6 +181,50 @@ def other_floor_windows(level, pallete, width, height, offset):
         for x in [1, 2, 4, width - 5, width - 3, width-2]:
             for y in range(offset + 2, offset + height):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
+
+def windows(level, pallete, length_x, height_y, no_floors, window_width, door_x):
+    print("to Sem")
+    x_center = length_x/2
+    x_west = x_center - 1 if length_x % 2 == 0 else x_center
+
+    window_max_height = height_y-2 # window height is depending on floor height
+
+    for window_x in range(1, x_center+1, window_width+1):
+        for i in range(window_x, min(window_x+window_width, x_center+1)):
+            if i == door_x-1 or i == door_x+1:
+                pass
+
+            #elif i == door_x: # If on same place as the window
+            else:
+                for j in range(2, 1+window_max_height+1):
+                    utilityFunctions.setBlock(level, pallete.window, i, j, 0)
+
+    for window_x in range(length_x-2, x_west, -(window_width+1)):
+        for i in range(window_x, window_x-min(window_width, window_x-x_west), -1):
+            if i == door_x-1 or i == door_x+1:
+                pass
+
+            else:
+                for j in range(2, 1+window_max_height+1):
+                    utilityFunctions.setBlock(level, pallete.window, i, j, 0)
+
+    for j in range(3, 1+window_max_height+1):
+        utilityFunctions.setBlock(level, pallete.door_window, door_x, j, 0)
+
+
+    y_r = 1 + height_y + 1
+    for floors in range(1, no_floors): # Windows on higher floors
+        for window_x in range(1, x_center+1, window_width+1):
+            for i in range(window_x, min(window_x+window_width, x_center+1)):
+                for j in range(window_max_height):
+                    utilityFunctions.setBlock(level, pallete.window, i, y_r+j, 0)
+
+        for window_x in range(length_x-2, x_west, -(window_width+1)):
+            for i in range(window_x, window_x-min(window_width, window_x-x_west), -1):
+                for j in range(window_max_height):
+                    utilityFunctions.setBlock(level, pallete.window, i, y_r+j, 0)
+
+        y_r += height_y
 
 def build_roof(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z):
     x_center = base_x + length_x/2
@@ -296,7 +343,7 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
 #  @ level: Minecraft world
 #  @ box: selected box by mcedit
 #  @ options: user defined inputs from mcedit
-def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type):
+def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type, Sem):
     base_x = 0
     base_y = 1
     base_z = 0
@@ -329,33 +376,74 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type)
     facade(level, pallete, length_x, height_y, length_z, base_x, temp_base_y, base_z, facade_type)
 
     #door:
-    door_x = math.floor(length_x / 2) if length_x > 6 else length_x - 2
+    
     door_z = 0
+
+    if Sem:
+        if length_x%2 == 0:
+            door_loc = random.randint(0, 1)
+            if door_loc:
+                door_x = base_x + 1
+            else:
+                door_x = length_x - 2
+        else:
+            door_x = random.randrange(base_x + 1, base_x+length_x - 1, 2)
+    
+    else:
+        door_x = math.floor(length_x / 2) if length_x > 6 else length_x - 2
+
+        if length_x % 2 == 0 and length_x > 6:
+            rng = random.randint(0,1)
+            door_x -= rng
 
     door_rot = 1 if rotations % 2 == 0 else 3
 
-    if length_x % 2 == 0 and length_x > 6:
-        rng = random.randint(0,1)
-        door_x -= rng#FIXME find a way to place 2 doors in the center here
-            #utilityFunctions.setBlock(level, (pallete.door, 1), door_x, base_y, door_z)
-            #utilityFunctions.setBlock(level, (pallete.door, 1 + 8), door_x, base_y + 1, door_z)
+
+
+    #windows:
+    if Sem:
+        w1ndow = not bool((length_x-1)%2) # Determine is windows are divisible by 2, for windows of 1 wide
+        w2ndow = not bool((length_x-1)%3) # Determine is windows are divisible by 3, for windows of 2 wide
+        if w1ndow and w2ndow:
+            print("both possible")
+            wide_windows = random.randint(0, 1)
+            if wide_windows:
+                n_windows = length_x//2
+                window_width = 1
+            else:
+                n_windows = length_x//3
+                window_width = 2
+
+        elif w1ndow and not w2ndow: # Windows can only be one wide
+            n_windows = length_x//2
+            window_width = 1
+
+        elif w2ndow and not w1ndow: # Windows can only be two wide
+            n_windows = length_x//3
+            window_width = 2
+
+        else: # Other cases: windows can be neither, we have to improvise :)
+            n_windows = length_x//2
+            window_width = 1
+        windows(level, pallete, length_x, height_y, no_floors, window_width, door_x)
+
+    else:
+        ground_floor_windows(level, pallete, length_x, height_y)
+        for i in range(1, no_floors):
+            offset = height_y * i
+            other_floor_windows(level, pallete, length_x, height_y, offset)
+    #'''
+    #source for door and bed rotations: https://github.com/abrightmoore/ProceduralSettlementsInMinecraft/blob/master/House.py
+    #print("level:", level.size)
 
     utilityFunctions.setBlock(level, (pallete.door, door_rot), door_x, base_y, door_z)
     utilityFunctions.setBlock(level, (pallete.door, door_rot + 8), door_x, base_y + 1, door_z)
 
-    #windows:
-    ground_floor_windows(level, pallete, length_x, height_y)
-    for i in range(1, no_floors):
-        offset = height_y * i
-        other_floor_windows(level, pallete, length_x, height_y, offset)
-    #source for door and bed rotations: https://github.com/abrightmoore/ProceduralSettlementsInMinecraft/blob/master/House.py
-    #print("level:", level.size)
-
 
     return level, box, [door_x, door_z]
 
-def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type):
-    scheme, box, door_coords = build_house(length_x, height_y, length_z, rotations, no_floors, facade_type)
+def place_house(og_level, length_x, height_y, length_z, base, rotations, no_floors, facade_type, Sem=True):
+    scheme, box, door_coords = build_house(length_x, height_y, length_z, rotations, no_floors, facade_type, Sem)
 
     if rotations % 2 == 0:
         rot_box = bx.BoundingBox((0,0,0),(box.maxx-box.minx,box.maxy-box.miny,box.maxz-box.minz))
@@ -383,7 +471,9 @@ def perform(level, box, options):
     rotations = options["door location (N=0, W=1, S=2, E=3)"]
     no_floors = options["number of floors"]
     facade_type = options["facade type (small stairs=0, large stairs=1, bell=2, flat=3)"]
-    place_house(level, length_x, height_y, length_z, (base_x, base_y, base_z), rotations, no_floors, facade_type)
+    Sem = options["Sem"]
+    bool_sem = Sem == 0
+    place_house(level, length_x, height_y, length_z, (base_x, base_y, base_z), rotations, no_floors, facade_type, bool_sem)
 
 	#TODO: windows, roof and facade top (different styles)
 
