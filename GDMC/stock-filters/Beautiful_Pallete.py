@@ -221,7 +221,7 @@ class Pallete():
         raam = random.randint(0, 2)
         #print('raam = ', raam)
         if raam == 0:#vanilla
-            self.window = (120, 0)
+            self.window = (102, 0)
         elif raam == 1:#gray
             self.window = (160, 7)
         elif raam == 2:#black
