@@ -447,7 +447,7 @@ class Settlement:
         length_plot = random.randint(settings.MIN_LENGTH, settings.MAX_LENGTH)  # Z
 
         if self.__available((x-2, z-2), (x+width_plot+2, z+length_plot+2)):
-          if random.uniform(0,1) <= P_PLOT:  # Probability to create plot
+          if random.uniform(0,1) <= settings.P_PLOT:  # Probability to create plot
             y = self.__get_height(x,z)
             for i in range(x, x+width_plot):  # Mark plot
               for j in range(z, z+length_plot):
