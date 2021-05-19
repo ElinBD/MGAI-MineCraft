@@ -141,7 +141,7 @@ def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z,
         utilityFunctions.setBlock(level, pallete.window, x_west, y, base_z)
 
 def ground_floor_windows(level, pallete, width, height):
-    print("not to Sem")
+    #print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-4]:
@@ -159,7 +159,7 @@ def ground_floor_windows(level, pallete, width, height):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
 
 def other_floor_windows(level, pallete, width, height, offset):
-    print("not to Sem")
+    #print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-2]:
@@ -181,7 +181,7 @@ def other_floor_windows(level, pallete, width, height, offset):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
 
 def windows(level, pallete, length_x, height_y, no_floors, window_width, door_x):
-    print("to Sem")
+    #print("to Sem")
     x_center = length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
@@ -369,7 +369,7 @@ def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
                 current_building_interior = random.choice(optional_interiors)
 
         current_building_interior = 'kitchen'
-        print("Building " + current_building_interior)
+        #print("Building " + current_building_interior)
         build_height = 1+(current_floor*height_y)
         stair_loc = current_floor%2
 
@@ -407,7 +407,7 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
     base_x = 0
     base_y = 1
     base_z = 0
-    tot_height = no_floors*height_y + length_x + 1 #/ 2 box too large is not really an issue...
+    tot_height = no_floors*height_y + 2*length_x + 1 #/ 2 box too large is not really an issue...
     level = MCSchematic((length_x, tot_height, length_z))#working object
     box = bx.BoundingBox((0,0,0),(length_x, tot_height, length_z))
 
@@ -465,7 +465,7 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
         w1ndow = not bool((length_x-1)%2) # Determine is windows are divisible by 2, for windows of 1 wide
         w2ndow = not bool((length_x-1)%3) # Determine is windows are divisible by 3, for windows of 2 wide
         if w1ndow and w2ndow:
-            print("both possible")
+            #print("both possible")
             wide_windows = random.randint(0, 1)
             if wide_windows:
                 n_windows = length_x//2
