@@ -12,6 +12,8 @@ class Pallete():
         self.quartz_slab = (44, 7)
         self.granite = (1, 1)
         self.polished_granite = (1, 2)
+        self.andesite = (1,5)
+        self.polished_andesite = (1,6)
         color = 33
         rng_wall = random.randint(0, color+11)
         if rng_wall <= color:#orange bricks

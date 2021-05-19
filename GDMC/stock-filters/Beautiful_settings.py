@@ -1,3 +1,7 @@
+from Beautiful_Pallete import Pallete
+
+P = Pallete()
+
 # Contains settings for generating the settlement
 
 
@@ -70,8 +74,8 @@ AIR = (0,0)
 WATER = (9,0)
 DIRT = (3,0)
 GRASS = (2,0)
-ROAD = [(1,0), (4,0), (98,0), (98,1), (98,2)]  # Grey blocks
-OUTER_WALL = [(45,0)]     # Orange-ish blocks (bricks, granite)
+ROAD = [(1,0), (4,0), (98,0), (98,1), (98,2), P.andesite, P.polished_andesite]         # Grey blocks
+OUTER_WALL = [(45,0), P.granite, P.polished_granite]  # Orange-ish blocks (bricks, granite)
 POLE = (139,0)            # Cobblestone wall
 WATER_GATE = (101,0)      # Iron bars
 DIAMOND = (57,0)
