@@ -16,8 +16,45 @@ inputs = (
 	("Creators: Koen, Elin, Tim, Sem, Jerryyyyyyyy", "label")
 	)
 
+def bully_smallest(lst, max_small):
+    potentials = []
+    for i in range(len(lst)):
+        if lst[i] < max_small:
+            for _ in range(max_small - lst[i]):
+                potentials.append(i)
+    
+    if len(potentials) == 0:
+        return False
+
+    bullied = random.randint(0, len(potentials) - 1)
+    lst[potentials[bullied]] += 1
+    return True
+
 def partition(total, min_part, max_part):
-    partit = []#TODO
+    old_total = total 
+    while(total != 0):
+        total = old_total
+        partit = []
+        while total > 10:
+            rng = random.randint(min_part, max_part)
+            total -= rng
+            partit.append(rng)
+
+        if total > 5:
+            partit.append(total)
+            total = 0
+
+        else:
+            patience = 5
+            bullied = True
+            while (total != 0 and bullied and patience > 0):
+                bullied = bully_smallest(partit, 7)
+                if bullied:
+                    total -= 1
+                patience -= 1
+            #end while
+        #end else
+    #end while
     return partit
 
 # Stores data about one building
@@ -513,18 +550,38 @@ class Settlement:
   def __generate_buildings(self):
     for building in self.buildings:
       facade_type = random.randint(0, 3)
-      building.multiple = False        #FIXME
+      #building.multiple = False        #FIXME
+
       if building.multiple == True:
         if building.width > building.length:
-          pass#TODO
+          partit = partition(building.width, 5, 10)
+          print("partit = ", partit)
+          cum_p = 0
+          for p in partit:
+            base = (building.P[0] + cum_p, building.P[1], building.P[2])
+            print ("building house at", base)
+            cum_p += p
+            door = place_house(self.level, p, 4, building.length, base, building.front, 3, facade_type)
+        #end if
           
         else:
-          pass#TODO
+          partit = partition(building.length, 5, 10)
+          print("partit = ", partit)
+          cum_p = 0
+          for p in partit:
+            base = building.P
+            base = (building.P[0], building.P[1], building.P[2] + cum_p)
+            print ("building house at", base)
+            cum_p += p
+            door = place_house(self.level, building.width, 4, p, base, building.front, 3, facade_type)
+        #end else
+        #break#FIXME
+      #end if multiple
       else:
         if building.front % 2 == 0:
-          door = place_house(self.level, building.width, 3, building.length, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.width, 4, building.length, building.P, building.front, 3, facade_type)
         else:
-          door = place_house(self.level, building.length, 3, building.width, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.length, 4, building.width, building.P, building.front, 3, facade_type)
       door[0] -= self.box.minx
       door[1] -= self.box.minz
       self.doors.append(door)
