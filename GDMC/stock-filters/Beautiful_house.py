@@ -337,15 +337,148 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
     #else: #if stair_loc == 3:
         #stair on south side grow to east side
 
-def build_library(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
-    pass
+# Function to detect walls that we can put stuff against. For some rooms, we definitely want the furniture against a wall (kitchen)
+def analyse_walls(level, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z):
+    build_options = []
+    if min_x == 1: # I guess this never happens, but just for completeness
+        build_options.append('west')
+    if max_x == length_x-1:
+        build_options.append('east')
+    if max_z == length_z-1:
+        build_options.append('south')
+    if min_z == 1:
+        build_options.append('north')
 
-def build_kitchen(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
-    for x in build_space_x:
-        for z in build_space_z:
-            utilityFunctions.setBlock(level, (4,0), x, build_height, z)
+    if build_options: # We can build against a wall, which is our preference
+        chosen_wall = random.choice(build_options)
 
-def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z):
+    else: # We cannot build against a wall, so improvise
+        chosen_wall = random.choice(['north', 'south', 'east', 'west']) # We'll just build in a direction, but not against a wall
+
+    return chosen_wall
+
+
+def build_library(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z): # TODO: don't place anything when near a staircase. These are in the range of height of the floor (height_y) + 4, either from front or back. Maybe even a little more space.
+    chosen_wall = random.choice(['north', 'south', 'east', 'west']) # For a library, we don't care where the bookshelfs are
+    if chosen_wall == 'north':
+        z = min_z
+        for x in range(min_x, max_x):
+            for y in range(build_height, build_height+(height_y-2)):
+                utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+    elif chosen_wall == 'south':
+        z = max_z-1
+        for x in range(min_x, max_x):
+            for y in range(build_height, build_height+(height_y-2)):
+                utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+    elif chosen_wall == 'west':
+        x = min_x
+        for z in range(min_z, max_z):
+            for y in range(build_height, build_height+(height_y-2)):
+                utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+    elif chosen_wall == 'east':
+        x = max_x-1
+        for z in range(min_z, max_z):
+            for y in range(build_height, build_height+(height_y-2)):
+                utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+
+def build_dining(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z, no_floors):
+    x_center = length_x/2
+    x_west = x_center - 1 if length_x % 2 == 0 else x_center
+    z_center = length_z/2
+
+
+
+    if max_x > length_x - 3:
+        print("x_center after all, now")
+        x_west = x_center
+
+    table_length_z = min((max_z-min_z), no_floors)
+    table_start_z = z_center-(table_length_z/2)
+
+    print("x'es")
+    print(x_center)
+    print(x_west)
+    print(min_x)
+    print(max_x)
+    print(length_x)
+
+    for z in range(table_start_z, table_start_z+table_length_z):
+        utilityFunctions.setBlock(level, pallete.int_fence, x_west, build_height, z)
+        utilityFunctions.setBlock(level, pallete.int_slab, x_west, build_height+1, z)
+        if x_west-1 >= min_x:
+            utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_west-1, build_height, z)
+        if x_west+1 < max_x:
+            utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_west+1, build_height, z)
+
+
+
+
+
+def build_cauldron(level, pallete, x, y, z):
+    utilityFunctions.setBlock(level, (pallete.cauldron, random.randint(0,1)), x, y, z)
+
+
+def build_kitchen(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z, no_floors):
+    chosen_wall = analyse_walls(level, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
+
+    if chosen_wall == 'north':
+        z = min_z
+        for x in range(min_x, max_x):
+            kitchen_unit = random.choice([pallete.furnace, pallete.cauldron, pallete.chest, pallete.crafting_table])
+            if kitchen_unit == pallete.cauldron:
+                build_cauldron(level, pallete, x, build_height, z)
+            elif kitchen_unit == pallete.crafting_table:
+                utilityFunctions.setBlock(level, pallete.crafting_table, x, build_height, z)
+            else:
+                utilityFunctions.setBlock(level, (kitchen_unit, 3), x, build_height, z)
+        min_z+=2
+
+    elif chosen_wall == 'south':
+        z = max_z-1
+        for x in range(min_x, max_x):
+            kitchen_unit = random.choice([pallete.furnace, pallete.cauldron, pallete.chest, pallete.crafting_table])
+            if kitchen_unit == pallete.cauldron:
+                build_cauldron(level, pallete, x, build_height, z)
+            elif kitchen_unit == pallete.crafting_table:
+                utilityFunctions.setBlock(level, pallete.crafting_table, x, build_height, z)
+            else:
+                utilityFunctions.setBlock(level, (kitchen_unit, 2), x, build_height, z)
+        max_z-=2
+
+    elif chosen_wall == 'west':
+        x = min_x
+        for z in range(min_z, max_z):
+            kitchen_unit = random.choice([pallete.furnace, pallete.cauldron, pallete.chest, pallete.crafting_table])
+            if kitchen_unit == pallete.cauldron:
+                build_cauldron(level, pallete, x, build_height, z)
+            elif kitchen_unit == pallete.crafting_table:
+                utilityFunctions.setBlock(level, pallete.crafting_table, x, build_height, z)
+            else:
+                utilityFunctions.setBlock(level, (kitchen_unit, 5), x, build_height, z)
+        min_x+=2
+
+    elif chosen_wall == 'east':
+        x = max_x-1
+        for z in range(min_z, max_z):
+            kitchen_unit = random.choice([pallete.furnace, pallete.cauldron, pallete.chest, pallete.crafting_table])
+            if kitchen_unit == pallete.cauldron:
+                build_cauldron(level, pallete, x, build_height, z)
+            elif kitchen_unit == pallete.crafting_table:
+                utilityFunctions.setBlock(level, pallete.crafting_table, x, build_height, z)
+            else:
+                utilityFunctions.setBlock(level, (kitchen_unit, 4), x, build_height, z)
+        max_x-=2
+
+    build_dining(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z, no_floors)
+
+
+
+def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z):
+    chosen_wall = analyse_walls(level, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
 
     utilityFunctions.setBlock(level, (26,8), length_x//2, build_height, length_z-2)
     utilityFunctions.setBlock(level, (26,8), (length_x//2)+1, build_height, length_z-2)
@@ -369,32 +502,40 @@ def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
                 current_building_interior = random.choice(optional_interiors)
 
         current_building_interior = 'kitchen'
-        #print("Building " + current_building_interior)
+        print("current_floor")
+        print(current_floor)
+        print("Building " + current_building_interior)
         build_height = 1+(current_floor*height_y)
         stair_loc = current_floor%2
 
         if current_floor == 0:
-            build_space_x = range(1, length_x-1)
-            build_space_z = range(3, length_z-1)
+            min_x = 2
+            max_x = length_x-1
+            min_z = 4
+            max_z = length_z-1
         elif current_floor == no_floors:
-            build_space_x = range(2, length_x-2)
-            build_space_z = range(2, length_z-1)
+            min_x = 3
+            max_x = length_x-3
+            min_z = 2
+            max_z = length_z-1
         else:
-            if stair_loc:
-                build_space_x = range(2, length_x-1)
-                build_space_z = range(2, length_z-3)
+            min_x = 2
+            max_x = length_x-2
+            min_z = 2
+            max_z = length_z-2
+            if stair_loc == 0:
+                max_z+=1
             else:
-                build_space_x = range(1, length_x-2)
-                build_space_z = range(2, length_z-3)
+                min_z-=1
 
         if current_building_interior == 'bedroom':
-            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
         elif current_building_interior == 'kitchen':
-            build_kitchen(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+            build_kitchen(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z, no_floors+1)
         elif current_building_interior == 'library':
-            build_library(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+            build_library(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
         else:
-            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, current_floor, build_space_x, build_space_z)
+            build_bedroom(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
 
         current_floor += 1
 

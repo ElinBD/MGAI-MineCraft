@@ -50,17 +50,17 @@ class Pallete():
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#spruce
                 self.int_slab = (126, 1)
-                self.int_fence = 188
+                self.int_fence = (188, 0)
                 self.int_stair = 134
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 1:#birch
                 self.int_slab = (126, 2)
-                self.int_fence = 189
+                self.int_fence = (189, 0)
                 self.int_stair = 135
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 2:#dark oak
                 self.int_slab = (126, 5)
-                self.int_fence = 191
+                self.int_fence = (191, 0)
                 self.int_stair = 164
                 self.int_sign = 68#TODO find out if it works
         elif rng_plank == 1:#spruce
@@ -69,17 +69,17 @@ class Pallete():
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#oak
                 self.int_slab = (126, 0)
-                self.int_fence = 85
+                self.int_fence = (85, 0)
                 self.int_stair = 53
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 1:#birch
                 self.int_slab = (126, 2)
-                self.int_fence = 189
+                self.int_fence = (189, 0)
                 self.int_stair = 135
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 2:#dark oak
                 self.int_slab = (126, 5)
-                self.int_fence = 191
+                self.int_fence = (191, 0)
                 self.int_stair = 164
                 self.int_sign = 68#TODO find out if it works
         elif rng_plank == 2:#birch
@@ -88,17 +88,17 @@ class Pallete():
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#spruce
                 self.int_slab = (126, 1)
-                self.int_fence = 188
+                self.int_fence = (188, 0)
                 self.int_stair = 134
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 1:#oak
                 self.int_slab = (126, 0)
-                self.int_fence = 85
+                self.int_fence = (85, 0)
                 self.int_stair = 53
                 self.int_sign = 68#TODO find out if it works
             if alt_plank == 2:#dark oak
                 self.int_slab = (126, 5)
-                self.int_fence = 191
+                self.int_fence = (191, 0)
                 self.int_stair = 164
                 self.int_sign = 68#TODO find out if it works
 
