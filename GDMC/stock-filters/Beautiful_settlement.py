@@ -61,6 +61,20 @@ def partition(total, min_part, max_part):
     #end while
     return partit
 
+def building_size(width, length):
+  cutoff = 66
+  area = width*length
+  height = 4 if area < cutoff else 5
+  
+  averea = np.sqrt(area)
+  
+  min_floors = max (1, int(averea / 3.5))
+  max_floors = min (4, int(averea / 2.2))
+
+  no_floors = random.randint(min_floors, max_floors)
+  
+  return height, no_floors
+
 # Stores data about one building
 class Building:
   def __init__(self, P, length, width, front, multiple):
@@ -564,9 +578,6 @@ class Settlement:
   # Generate a building on top of each plot
   def __generate_buildings(self):
     for building in self.buildings:
-      facade_type = random.randint(0, 3)
-      #building.multiple = False        #FIXME
-
       if building.multiple == True:
         if building.width > building.length:
           partit = partition(building.width, 5, 10)
@@ -574,7 +585,9 @@ class Settlement:
           for p in partit:
             base = (building.P[0] + cum_p, building.P[1], building.P[2])
             cum_p += p
-            door = place_house(self.level, p, 4, building.length, base, building.front, 3, facade_type)
+            facade_type = random.randint(0, 3)
+            h, n = building_size(p, building.length)
+            door = place_house(self.level, p, h, building.length, base, building.front, n, facade_type)
         #end if
           
         else:
@@ -584,17 +597,22 @@ class Settlement:
             base = building.P
             base = (building.P[0], building.P[1], building.P[2] + cum_p)
             cum_p += p
-            door = place_house(self.level, p, 4, building.width, base, building.front, 3, facade_type)
+            facade_type = random.randint(0, 3)
+            h, n = building_size(p, building.width)
+            door = place_house(self.level, p, h, building.width, base, building.front, n, facade_type)
         #end else
       #end if multiple
       else:
+        facade_type = random.randint(0, 3)
+        h, n = building_size(building.width, building.length)
         if building.front % 2 == 0:
-          door = place_house(self.level, building.width, 4, building.length, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.width, h, building.length, building.P, building.front, n, facade_type)
         else:
-          door = place_house(self.level, building.length, 4, building.width, building.P, building.front, 3, facade_type)
+          door = place_house(self.level, building.length, h, building.width, building.P, building.front, n, facade_type)
       door[0] -= self.box.minx
       door[1] -= self.box.minz
       self.doors.append(door)
+    #end for buildings
     self.doors = np.array(self.doors)
 
 
