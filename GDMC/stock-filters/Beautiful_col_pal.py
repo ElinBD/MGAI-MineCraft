@@ -4,10 +4,11 @@ from pymclevel.box import BoundingBox
 from pymclevel import biome_types
 import random
 
-inputs = (
-    ("Get color palets based on a given box", "label"),
-    ("Creator: Elin", "label")
-)
+
+# inputs = (
+#     ("Get color palets based on a given box", "label"),
+#     ("Creator: Elin", "label")
+# )
 
 stairs = [(53, 0), (67, 0), (108, 0), (109, 0), (128, 0),
           (134, 0), (135, 0), (136, 0),
