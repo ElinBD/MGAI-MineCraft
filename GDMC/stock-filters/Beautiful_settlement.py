@@ -339,7 +339,7 @@ class Settlement:
       for dy in range(-5, 6):
         for dz in range(-5, 6):
           if self.__in_box(x+dx, z+dz):
-            if self.__get_block(x+dx, y+dy, z+dz) == WATER_GATE[0]:
+            if self.__get_block(x+dx, y+dy, z+dz) == settings.WATER_GATE[0]:
               return True
     return False  # No water gate found
   
@@ -360,26 +360,26 @@ class Settlement:
 
   # Generate entrances into the outer walls, but only on the inner_r radius
   def __entrances(self, inner_r, outer_r):
-    curr_len = MIN_DIST_ENTRANCE-10
+    curr_len = settings.MIN_DIST_ENTRANCE-10
 
     for alpha in range(0, 360):
       if self.__is_suitable(alpha, inner_r):  # Suitable spot for an entrance
-        if curr_len >= MIN_DIST_ENTRANCE and random.randint(0,1) <= P_ENTRANCE:  # Enough distance between each entrance
+        if curr_len >= settings.MIN_DIST_ENTRANCE and random.randint(0,1) <= settings.P_ENTRANCE:  # Enough distance between each entrance
           for r in range(1, inner_r+3):
             x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
             z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
-            self.__place_grid(AIR, x, z, 1)   # Make gap into the wall
-            self.__place_grid(AIR, x, z, 2)
-            self.__place_grid(AIR, x, z, 3)
-            self.__place_grid(AIR, x, z, 4)
+            self.__place_grid(settings.AIR, x, z, 1)   # Make gap into the wall
+            self.__place_grid(settings.AIR, x, z, 2)
+            self.__place_grid(settings.AIR, x, z, 3)
+            self.__place_grid(settings.AIR, x, z, 4)
 
           # Create bridge from entrance to the outside
           for r in range(inner_r-3, inner_r+4):
             x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
             z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
-            self.__place_grid(OUTER_BRIDGE, x, z, 1)   # Make gap into the wall
+            self.__place_grid(settings.OUTER_BRIDGE, x, z, 1)   # Make gap into the wall
 
           curr_len = 0
       curr_len += 1
@@ -412,8 +412,10 @@ class Settlement:
       for z in range(P1_z-3, P1_z+length+3):
         if not self.__in_box(x, z):
           continue
+        
         y = self.__get_height(x, z)
         block = self.__get_block(x, y, z)
+
         if not P1_x <= x < P1_x+width:
           if x < P1_x and (block == settings.ROAD[0] or block == settings.WATER[0]):  # EAST
             space[0] += 1
@@ -646,20 +648,20 @@ class Settlement:
     for dx in range(-2, 3):
       for dz in range(-2, 3):
         y = self.__get_height(x+dx, z+dz)
-        if not self.__get_block(x+dx, y+1, z+dz) == AIR[0]:  # Space should be free
+        if not self.__get_block(x+dx, y+1, z+dz) == settings.AIR[0]:  # Space should be free
           return False
-        if not self.__get_block(x+dz, y, z+dz) == ROAD[0]:  # Tree cant be on edge
+        if not self.__get_block(x+dz, y, z+dz) == settings.ROAD[0]:  # Tree cant be on edge
           return False
     return True
 
 
   # Recursively generate leaves on the tree
   def __generate_leave(self, x, y, z, depth):
-    if depth >= len(P_LEAVES) or not self.__get_block(x, y, z) == AIR[0]:
+    if depth >= len(settings.P_LEAVES) or not self.__get_block(x, y, z) == settings.AIR[0]:
       return  # Max recursive depth reached
     
-    if random.randint(0,1) <= P_LEAVES[depth]:  # Generate the leave
-      self.__place_block(LEAVE, x, y, z)
+    if random.randint(0,1) <= settings.P_LEAVES[depth]:  # Generate the leave
+      self.__place_block(settings.LEAVE, x, y, z)
 
       self.__generate_leave(x+1, y, z, depth+1)
       self.__generate_leave(x-1, y, z, depth+1)
@@ -674,11 +676,11 @@ class Settlement:
   # Generate tree at (x,z)
   def __generate_tree(self, x, z):
     y = self.__get_height(x, z) + 1
-    height = random.randint(MIN_HEIGHT_TREE, MAX_HEIGHT_TREE)
+    height = random.randint(settings.MIN_HEIGHT_TREE, settings.MAX_HEIGHT_TREE)
 
     # Place logs of tree
     for i in range(height):
-      self.__place_block(LOG, x, y+i, z)
+      self.__place_block(settings.LOG, x, y+i, z)
 
     # Recursively place leaves
     self.__generate_leave(x, y+height, z, 0)
@@ -693,14 +695,14 @@ class Settlement:
         
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
-        if not self.water[x][z] and self.__space_tree(x, z) and random.uniform(0,1) <= P_TREE:
-          self.__place_block(DIRT, x, self.__get_height(x, z), z)
+        if not self.water[x][z] and self.__space_tree(x, z) and random.uniform(0,1) <= settings.P_TREE:
+          self.__place_block(settings.DIRT, x, self.__get_height(x, z), z)
 
           for dx in range(-1, 2):
             for dz in range(-1, 2):
               y = self.__get_height(x+dx, z+dz)
-              if random.uniform(0,1) <= P_DIRT and self.__get_block(x+dz, y, z+dz) == ROAD[0]:
-                self.__place_block(DIRT, x+dx, y, z+dz) 
+              if random.uniform(0,1) <= settings.P_DIRT and self.__get_block(x+dz, y, z+dz) == settings.ROAD[0]:
+                self.__place_block(settings.DIRT, x+dx, y, z+dz) 
 
           self.__generate_tree(x, z)
           alpha += 20  # Make sure that there is sufficient space between every tree
@@ -713,14 +715,14 @@ class Settlement:
       for z in range(self.domain.shape[1]):
         if self.domain[x][z] and not self.water[x][z]:  # Should be inside the settlement
           y = self.__get_height(x, z)
-          if self.__get_block(x, y, z) == ROAD[0]:
+          if self.__get_block(x, y, z) == settings.ROAD[0]:
             pos_loc.append((x,y,z))  # Possible location for the stones
     
     loc = random.sample(pos_loc, k=3)  # 3 stones, so sample three locations
     
-    self.__place_block(RED_STONE, loc[0][0], loc[0][1], loc[0][2])    # RED stone
-    self.__place_block(BLUE_STONE, loc[1][0], loc[1][1], loc[1][2])   # BLUE stone
-    self.__place_block(WHITE_STONE, loc[2][0], loc[2][1], loc[2][2])  # WHITE stone
+    self.__place_block(settings.RED_STONE, loc[0][0], loc[0][1], loc[0][2])    # RED stone
+    self.__place_block(settings.BLUE_STONE, loc[1][0], loc[1][1], loc[1][2])   # BLUE stone
+    self.__place_block(settings.WHITE_STONE, loc[2][0], loc[2][1], loc[2][2])  # WHITE stone
 
 
   # Generates the settlement
