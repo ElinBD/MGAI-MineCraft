@@ -239,17 +239,16 @@ def place_bridges(level, box, water, doors):
         width = 3
         
         y = height_map[bridge[0], bridge[1]] + box.miny - 1
-        NS = True
-        if NS:#z coord changes
+        if box_max[0] - box_min[0] == 0:#z coord changes
             length = box_max[1] - box_min[1]
-            delta = min(3, int(length/2 - 1))
-            place_bridge(level, length, delta, width, (box_min[0] - 1, y, box_min[1]), 1)
+            delta = min(3, int((length  + 1) / 2))
+            place_bridge(level, length + 2, delta, width, (box_min[0] - 1, y + 1, box_min[1]), 1)
             #TODO cry about rotations :-(
 
         else:#x coord changes
             length = box_max[0] - box_min[0]
-            delta = min(3, int(length/2 - 1))
-            place_bridge(level, length, delta, width, (box_min[0], y, box_min[1] - 1), 0)
+            delta = min(3, int((length + 1) / 2))
+            place_bridge(level, length + 2, delta, width, (box_min[0], y + 1, box_min[1] - 1), 0)
 
 '''
 def place_bridges(level, box, water, doors):
