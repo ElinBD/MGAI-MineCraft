@@ -570,27 +570,22 @@ class Settlement:
       if building.multiple == True:
         if building.width > building.length:
           partit = partition(building.width, 5, 10)
-          print("partit = ", partit)
           cum_p = 0
           for p in partit:
             base = (building.P[0] + cum_p, building.P[1], building.P[2])
-            print ("building house at", base)
             cum_p += p
             door = place_house(self.level, p, 4, building.length, base, building.front, 3, facade_type)
         #end if
           
         else:
           partit = partition(building.length, 5, 10)
-          print("partit = ", partit)
           cum_p = 0
           for p in partit:
             base = building.P
             base = (building.P[0], building.P[1], building.P[2] + cum_p)
-            print ("building house at", base)
             cum_p += p
-            door = place_house(self.level, building.width, 4, p, base, building.front, 3, facade_type)
+            door = place_house(self.level, p, 4, building.width, base, building.front, 3, facade_type)
         #end else
-        #break#FIXME
       #end if multiple
       else:
         if building.front % 2 == 0:

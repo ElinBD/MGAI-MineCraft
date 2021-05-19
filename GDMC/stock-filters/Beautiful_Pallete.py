@@ -10,8 +10,8 @@ class Pallete():
         self.quartz_stair = 156
         self.quartz_block = (155, 0)
         self.quartz_slab = (44, 7)
-        color = 30
-        rng_wall = random.randint(0, 5)
+        color = 33
+        rng_wall = random.randint(0, color+11)
         if rng_wall <= color:#orange bricks
             self.wall = (45, 0)
         elif rng_wall == color + 1:#orange
@@ -103,4 +103,7 @@ class Pallete():
         self.ladder = 65
         self.bed = 26
     
-    
+        self.cauldron = 118
+        self.furnace = 61
+        self.chest = 54
+        self.bookshelf = (47, 0)
