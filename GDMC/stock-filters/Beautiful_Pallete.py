@@ -45,12 +45,60 @@ class Pallete():
         if rng_plank == 0:#oak
             self.stair = 53
             self.floor = (5, 0)
+            alt_plank = random.randint(0, 2)
+            if alt_plank == 0:#spruce
+                self.int_slab = (126, 1)
+                self.int_fence = 188
+                self.int_stair = 134
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 1:#birch
+                self.int_slab = (126, 2)
+                self.int_fence = 189
+                self.int_stair = 135
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 2:#dark oak
+                self.int_slab = (126, 5)
+                self.int_fence = 191
+                self.int_stair = 164
+                self.int_sign = 68#TODO find out if it works
         elif rng_plank == 1:#spruce
             self.stair = 134
             self.floor = (5, 1)
+            alt_plank = random.randint(0, 2)
+            if alt_plank == 0:#oak
+                self.int_slab = (126, 0)
+                self.int_fence = 85
+                self.int_stair = 53
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 1:#birch
+                self.int_slab = (126, 2)
+                self.int_fence = 189
+                self.int_stair = 135
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 2:#dark oak
+                self.int_slab = (126, 5)
+                self.int_fence = 191
+                self.int_stair = 164
+                self.int_sign = 68#TODO find out if it works
         elif rng_plank == 2:#birch
             self.stair = 135
             self.floor = (5, 2)
+            alt_plank = random.randint(0, 2)
+            if alt_plank == 0:#spruce
+                self.int_slab = (126, 1)
+                self.int_fence = 188
+                self.int_stair = 134
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 1:#oak
+                self.int_slab = (126, 0)
+                self.int_fence = 85
+                self.int_stair = 53
+                self.int_sign = 68#TODO find out if it works
+            if alt_plank == 2:#dark oak
+                self.int_slab = (126, 5)
+                self.int_fence = 191
+                self.int_stair = 164
+                self.int_sign = 68#TODO find out if it works
 
         rng_door = random.randint(0, 4)
         #print('door = ', rng_door)
@@ -107,3 +155,6 @@ class Pallete():
         self.furnace = 61
         self.chest = 54
         self.bookshelf = (47, 0)
+
+        self.int_pot = (140, 0)
+        self.int_flower = (38, random.randint(0, 8))
