@@ -99,5 +99,8 @@ class Pallete():
         elif raam == 3:#light_gray
             self.window = (160, 8)
             self.door_window = (95, 8)
+
+        self.ladder = 65
+        self.bed = 26
     
     
