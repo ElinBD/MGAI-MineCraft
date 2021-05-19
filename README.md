@@ -1,40 +1,37 @@
-# MGAI-MineCraft
+# Generating a beautiful settlement in Minecraft using PCG
+### Koen Bouwman, Elin Dijkstra, Sem Kluiver, Jerry Schonenberg, Tim Schwarz
+##### Modern Game AI Algorithms | 20-05-2021
 
-Repository for the final assignment of the MGAI course at Leiden 20/21.
+This repository contains the code to generate a beautiful settlement in Minecraft using the MCEdit framework. The generation of the settlement is inspired by dutch towns. It contains multiple filters which can be executed by MCEdit. This is an attempt at solving the [Generative Design in Minecraft competition (GDMC)](https://gendesignmc.engineering.nyu.edu/).
 
-## Installation of MCedit
+## Contents
 
-===== REPO =====
-```bash
-git clone --recursive https://github.com/mcgreentn/GDMC
+* [Requirements](#requirements)
+* [Usage](#usage)
+
+## Requirements <div id="requirements"></div>
+* python==2.7
+* numpy
+* pygame==1.9.4
+* pyyaml
+* pillow
+* ftputil==3.4
+* PyOpenGL
+* PyOpenGL-accelerate
+* xlib
+
+## Usage <div id="usage"></div>
+All filters of this repository should all be copied to the directory `./GDMC/stock-filters/`. Then, simply run the MCEdit framework with:
 ```
-===== PACKAGES =====
-
-- Python==2.7.16
-- numpy==1.16.5
-- pygame==1.9.4 *
-- pyyaml==5.1.2
-- pillow==6.2.0
-- ftputil==3.4 *
-- PyOpenGL==3.1.5
-- PyOpenGL-accelerate==3.1.5
-- xlib
-
-* = must be this version
-
-===== SETUP =====
-```bash
-python setup.py build_ext --inplace
-```
-```python
-if fails:
-	pip install --upgrade cython
-	if fails:
-		get visual c++ 9.0 from: http://aka.ms/vcpython27
-```
-
-===== RUN =====
-
-```bash
 python mcedit.py
 ```
+Once the startup is completed, open/generate a world and start moving around. Use the following buttons to navigate:
+* move around using W/S/A/D
+* turn using I/J/K/L
+* go up and down using SPACE and SHIFT, respectively
+
+Then, use the left-most button on the toolbar to select a box in which the settlement should be generated. NOTE: our filters only work if the size of the box is large enough, otherwise an error occurs. Also make sure that all trees and hills are inside the box.
+
+Once the box is selected, select the fifth button from the left and select the `Beautiful_settlement` filter. Press the filter button and then a beautiful settlement is generated (this may take a couple of minutes). The filter will print status-updates to the terminal during the generation. Once the terminal contains the message `Generation Completed!`, it is finished.
+
+Moreover, the characteristics of the settlement can be altered in `Beautiful_settings.py`. However, note that the current settings are finetuned for nice looking settlements. Drastically changing one of the settings may result in drastic changes.
