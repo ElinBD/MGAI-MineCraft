@@ -1,6 +1,6 @@
 import numpy as np
 from random import sample
-from Beautiful_meta_analysis import get_surface_type_map
+from Beautiful_meta_analysis import get_surface_type_map, get_height_map
 import utilityFunctions as utilityFunctions
 from pymclevel import biome_types
 from pymclevel.box import BoundingBox
@@ -169,10 +169,10 @@ def get_bridge_locations(level, box, canal_map, doors):
 
     return sorted_candidates[0]
 
-def find_bridge_box(level, box, bridge):
+def find_bridge_box(level, box, bridge, height_map):
     bridgex = bridge[0] + box.minx
     bridgez = bridge[1] + box.minz
-    y = box.maxy
+    y = height_map[bridge[0], bridge[1]] + box.miny 
 
     x_bridge = [[bridgex, bridgez]]
     i = 1
@@ -217,6 +217,7 @@ def find_bridge_box(level, box, bridge):
 
 
 def place_bridges(level, box, water, doors):
+    height_map = get_height_map(level, box)
     bridge_coords = get_bridge_locations(level, box, water, doors)
     
     # split candidate in the 3 bridge locations
@@ -224,8 +225,8 @@ def place_bridges(level, box, water, doors):
     
     # # find the rest of the bridgebox for each bridge
     for bridge in bridge_loca:
-        box_coords = find_bridge_box(level, box, bridge)
-        y = box.maxy-1
+        box_coords = find_bridge_box(level, box, bridge, height_map)
+        y = height_map[bridge[0], bridge[1]] + box.miny - 1
         # print(box_coords)
         for count, value in enumerate(box_coords):
             x = value[0]
