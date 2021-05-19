@@ -385,6 +385,8 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 else:
                     utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_center-1, build_height, stair_z)
                     utilityFunctions.setBlock(level, pallete.int_wood, x_center, build_height, stair_z)
+                    if stair_z == min_z+2 or stair_z == max_z-3:
+                        utilityFunctions.setBlock(level, pallete.torch, x_center, build_height+1, stair_z)
                     utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center+1, build_height, stair_z)
 
 
