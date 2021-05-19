@@ -49,6 +49,7 @@ class Pallete():
         if rng_plank == 0:#oak
             self.stair = 53
             self.floor = (5, 0)
+            self.fence = (85, 0)
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#spruce
                 self.int_slab = (126, 1)
@@ -71,6 +72,7 @@ class Pallete():
         elif rng_plank == 1:#spruce
             self.stair = 134
             self.floor = (5, 1)
+            self.fence = (188, 0)
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#oak
                 self.int_slab = (126, 0)
@@ -93,6 +95,7 @@ class Pallete():
         elif rng_plank == 2:#birch
             self.stair = 135
             self.floor = (5, 2)
+            self.fence = (189, 0)
             alt_plank = random.randint(0, 2)
             if alt_plank == 0:#spruce
                 self.int_slab = (126, 1)

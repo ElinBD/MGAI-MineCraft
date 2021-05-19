@@ -808,19 +808,19 @@ class Settlement:
     self.__generate_bridges()  # Lower water level by one block
 
     print "Generating street lights.."
-    self.__generate_street_light()  # Generate street lights
+    #FIXME self.__generate_street_light()  # Generate street lights
 
     print "Lower water level.."
-    self.__lower_water_level()  # Lower water level by one block
+    #FIXME self.__lower_water_level()  # Lower water level by one block
 
     print "Generating greenery.."
-    self.__generate_greenery()  # Generate trees, bushes and grass 
+    #FIXME self.__generate_greenery()  # Generate trees, bushes and grass 
 
     print "Generating secret stuff.."
-    self.__three_stones()   # The three stones of Leiden
+    #FIXME self.__three_stones()   # The three stones of Leiden
 
     print "Smoothen edges.."
-    self.__smoothen_edges() # Smoothen edges of the settlement
+    #FIXME self.__smoothen_edges() # Smoothen edges of the settlement
 
     print "\nGeneration completed!"
 

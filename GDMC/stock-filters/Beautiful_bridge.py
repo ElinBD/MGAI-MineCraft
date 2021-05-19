@@ -4,6 +4,7 @@ from Beautiful_meta_analysis import get_surface_type_map, get_height_map
 import utilityFunctions as utilityFunctions
 from pymclevel import biome_types
 from pymclevel.box import BoundingBox
+from Beautiful_new_bridge import place_bridge
 
 # Information visible in mcedit, can be used for user-input
 inputs = (
@@ -214,8 +215,43 @@ def find_bridge_box(level, box, bridge, height_map):
             return e[0]   
         x_bridge.sort(key=myFunc)
         return x_bridge
+#'''
+def place_bridges(level, box, water, doors):
+    height_map = get_height_map(level, box)
+    bridge_coords = get_bridge_locations(level, box, water, doors)
+    
+    # split candidate in the 3 bridge locations
+    bridge_loca = np.split(bridge_coords, 3)
+    
+    # # find the rest of the bridgebox for each bridge
+    for bridge in bridge_loca:
+        print "for"
+        box_coords = find_bridge_box(level, box, bridge, height_map)
+        print box_coords
+        print "fro"
+        #print len(box_coords)
+        box_min = box_coords[0]
+        box_max = box_coords[-1]
+        
+        print box_min, box_max
+        print box_min[0], box_min[1], box_max[0], box_max[1]
 
+        width = 3
+        
+        y = height_map[bridge[0], bridge[1]] + box.miny - 1
+        NS = True
+        if NS:#z coord changes
+            length = box_max[1] - box_min[1]
+            delta = min(3, int(length/2 - 1))
+            place_bridge(level, length, delta, width, (box_min[0] - 1, y, box_min[1]), 1)
+            #TODO cry about rotations :-(
 
+        else:#x coord changes
+            length = box_max[0] - box_min[0]
+            delta = min(3, int(length/2 - 1))
+            place_bridge(level, length, delta, width, (box_min[0], y, box_min[1] - 1), 0)
+
+'''
 def place_bridges(level, box, water, doors):
     height_map = get_height_map(level, box)
     bridge_coords = get_bridge_locations(level, box, water, doors)
@@ -227,7 +263,7 @@ def place_bridges(level, box, water, doors):
     for bridge in bridge_loca:
         box_coords = find_bridge_box(level, box, bridge, height_map)
         y = height_map[bridge[0], bridge[1]] + box.miny - 1
-        # print(box_coords)
+        print(box_coords)
         for count, value in enumerate(box_coords):
             x = value[0]
             z = value[1]
@@ -237,7 +273,7 @@ def place_bridges(level, box, water, doors):
                 y = y - 1
 
             utilityFunctions.setBlock(level, (1,0), x, y, z)
-        
+#'''
 
 def perform(level, box, options):
     place_bridges(level, box, [], [])
