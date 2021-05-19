@@ -370,12 +370,18 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
             for y in range(build_height, build_height+(height_y-2)):
                 utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
 
+            if x == min_x or x == max_x-1:
+                utilityFunctions.setBlock(level, pallete.torch, x, build_height+(height_y-2), z)
+
         z = max_z-1
         for x in range(min_x, max_x):
             for y in range(build_height, build_height+(height_y-2)):
                 utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
 
-        for stair_z in range (min_z+2, max_z-2):
+            if x == min_x or x == max_x-1:
+                utilityFunctions.setBlock(level, pallete.torch, x, build_height+(height_y-2), z)
+
+        for stair_z in range (min_z+2, max_z-2): # Place benches (for reading)
             if (max_x-min_x)%2 == 0:
                 utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center, build_height, stair_z)
                 utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_west, build_height, stair_z)
@@ -401,6 +407,9 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                     for z in range(min_z, max_z):
                         for y in range(build_height, build_height+(height_y-2)):
                             utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+                        if z == min_z or z == max_z-1:
+                            utilityFunctions.setBlock(level, pallete.torch, x, build_height+(height_y-2), z)
                     break
                 for z in range(min_z+1, max_z-1):
                     utilityFunctions.setBlock(level, (pallete.int_stair, 1), x, build_height, z)
@@ -414,6 +423,9 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                     for y in range(build_height, build_height+(height_y-2)):
                         utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
 
+                    if z == min_z or z == max_z-1:
+                        utilityFunctions.setBlock(level, pallete.torch, x, build_height+(height_y-2), z)
+
                 x += 1
                 if x >= max_x:
                     go = False
@@ -422,6 +434,9 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 for z in range(min_z, max_z):
                     for y in range(build_height, build_height+(height_y-2)):
                         utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
+
+                    if z == min_z or z == max_z-1:
+                        utilityFunctions.setBlock(level, pallete.torch, x, build_height+(height_y-2), z)
 
                 x += 2
                 if x >= max_x:
@@ -598,17 +613,17 @@ def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, mi
 
     else:
         if length_x % 2 == 0: # It just looks too nice to have two beds in a building with even length_x
-            utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z+1)
-            utilityFunctions.setBlock(level, (pallete.bed,10), x_west, build_height, min_z+1)
-            utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+2)
-            utilityFunctions.setBlock(level, (pallete.bed,2), x_west, build_height, min_z+2)
+            utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z)
+            utilityFunctions.setBlock(level, (pallete.bed,10), x_west, build_height, min_z)
+            utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+1)
+            utilityFunctions.setBlock(level, (pallete.bed,2), x_west, build_height, min_z+1)
 
             if x_center+1 < max_x:
                 if random.randint(0,1):
-                    utilityFunctions.setBlock(level, pallete.int_wood, x_center+1, build_height, min_z+1)
-                    utilityFunctions.setBlock(level, pallete.torch, x_center+1, build_height+1, min_z+1)
+                    utilityFunctions.setBlock(level, pallete.int_wood, x_center+1, build_height, min_z)
+                    utilityFunctions.setBlock(level, pallete.torch, x_center+1, build_height+1, min_z)
                 else:
-                    utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+1, build_height, min_z+1)
+                    utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+1, build_height, min_z)
 
             if x_west-1 >= min_x:
                 if random.randint(0,1):
@@ -619,49 +634,49 @@ def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, mi
 
         else:
             if no_beds == 1:
-                utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z+1)
-                utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+2)
+                utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z)
+                utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+1)
 
                 if x_center+1 < max_x:
                     if random.randint(0,1):
-                        utilityFunctions.setBlock(level, pallete.int_wood, x_center+1, build_height, min_z+1)
-                        utilityFunctions.setBlock(level, pallete.torch, x_center+1, build_height+1, min_z+1)
+                        utilityFunctions.setBlock(level, pallete.int_wood, x_center+1, build_height, min_z)
+                        utilityFunctions.setBlock(level, pallete.torch, x_center+1, build_height+1, min_z)
                     else:
-                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+1, build_height, min_z+1)
+                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+1, build_height, min_z)
 
                 if x_west-1 >= min_x:
                     if random.randint(0,1):
-                        utilityFunctions.setBlock(level, pallete.int_wood, x_west-1, build_height, min_z+1)
-                        utilityFunctions.setBlock(level, pallete.torch, x_west-1, build_height+1, min_z+1)
+                        utilityFunctions.setBlock(level, pallete.int_wood, x_west-1, build_height, min_z)
+                        utilityFunctions.setBlock(level, pallete.torch, x_west-1, build_height+1, min_z)
                     else:
-                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_west-1, build_height, min_z+1)
+                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_west-1, build_height, min_z)
 
             else:
                 if no_beds == 2:
-                    utilityFunctions.setBlock(level, pallete.int_wood, x_center, build_height, min_z+1)
-                    utilityFunctions.setBlock(level, pallete.torch, x_center, build_height+1, min_z+1)
+                    utilityFunctions.setBlock(level, pallete.int_wood, x_center, build_height, min_z)
+                    utilityFunctions.setBlock(level, pallete.torch, x_center, build_height+1, min_z)
                 else:
-                    utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z+1)
-                    utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+2)
+                    utilityFunctions.setBlock(level, (pallete.bed,10), x_center, build_height, min_z)
+                    utilityFunctions.setBlock(level, (pallete.bed,2), x_center, build_height, min_z+1)
 
-                utilityFunctions.setBlock(level, (pallete.bed,10), x_center-1, build_height, min_z+1)
-                utilityFunctions.setBlock(level, (pallete.bed,2), x_center-1, build_height, min_z+2)
-                utilityFunctions.setBlock(level, (pallete.bed,10), x_center+1, build_height, min_z+1)
-                utilityFunctions.setBlock(level, (pallete.bed,2), x_center+1, build_height, min_z+2)
+                utilityFunctions.setBlock(level, (pallete.bed,10), x_center-1, build_height, min_z)
+                utilityFunctions.setBlock(level, (pallete.bed,2), x_center-1, build_height, min_z+1)
+                utilityFunctions.setBlock(level, (pallete.bed,10), x_center+1, build_height, min_z)
+                utilityFunctions.setBlock(level, (pallete.bed,2), x_center+1, build_height, min_z+1)
 
                 if x_center+2 < max_x:
                     if random.randint(0,1):
-                        utilityFunctions.setBlock(level, pallete.int_wood, x_center+2, build_height, min_z+1)
-                        utilityFunctions.setBlock(level, pallete.torch, x_center+2, build_height+1, min_z+1)
+                        utilityFunctions.setBlock(level, pallete.int_wood, x_center+2, build_height, min_z)
+                        utilityFunctions.setBlock(level, pallete.torch, x_center+2, build_height+1, min_z)
                     else:
-                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+2, build_height, min_z+1)
+                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center+2, build_height, min_z)
 
                 if x_center-2 >= min_x:
                     if random.randint(0,1):
-                        utilityFunctions.setBlock(level, pallete.int_wood, x_center-2, build_height, min_z+1)
-                        utilityFunctions.setBlock(level, pallete.torch, x_center-2, build_height+1, min_z+1)
+                        utilityFunctions.setBlock(level, pallete.int_wood, x_center-2, build_height, min_z)
+                        utilityFunctions.setBlock(level, pallete.torch, x_center-2, build_height+1, min_z)
                     else:
-                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center-2, build_height, min_z+1)
+                        utilityFunctions.setBlock(level, (pallete.chest, 3), x_center-2, build_height, min_z)
 
 
 def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
@@ -695,12 +710,12 @@ def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
         else:
             min_x = 2
             max_x = length_x-2
-            min_z = 2
+            min_z = 1
             max_z = length_z-1
             if stair_loc == 0:
-                max_z+=1
+                min_z+=1
             else:
-                min_z-=1
+                max_z-=1
 
         if current_building_interior == 'bedroom':
             build_bedroom(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z)
