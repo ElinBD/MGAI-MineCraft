@@ -49,7 +49,7 @@ CANAL_VALUE = 100  # Added value to direct the buildings nearby a canal to it
 # ==== Street light specific ====
 LEN_POLE = 4    # Length of street light pole
 SPARSITY = 9    # Area (NxN) where at most one street light can be
-
+LIGHT_SOURCE = (169,0)  # (89,0)
 
 # ==== Outer wall specific ====
 LEN_WALL = 7
@@ -70,14 +70,15 @@ AIR = (0,0)
 WATER = (9,0)
 DIRT = (3,0)
 GRASS = (2,0)
-ROAD = (45,0)             # Bricks
-OUTER_WALL = (98,0)       # Stone bricks
+ROAD = [(1,0), (4,0), (98,0), (98,1), (98,2)]  # Grey blocks
+OUTER_WALL = [(45,0)]     # Orange-ish blocks (bricks, granite)
 POLE = (139,0)            # Cobblestone wall
 WATER_GATE = (101,0)      # Iron bars
 DIAMOND = (57,0)
 OUTER_BRIDGE = (44,5)     # Stone brick slab
 
 LOG = (17,0)
+BUSH = (18,5)
 LEAVE = (18,4)
 
 RED_STONE = (152,0)       # Redstone block

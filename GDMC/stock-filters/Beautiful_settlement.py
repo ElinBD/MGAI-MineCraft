@@ -77,6 +77,10 @@ class Settlement:
     self.level = level
     self.box = box
 
+    # Radius of outer and inner circles, forming the gear-shape 
+    self.outer_r = random.randint(settings.MIN_OUTER, settings.MAX_OUTER)
+    self.inner_r = random.randint(settings.MIN_INNER, settings.MAX_INNER)
+
     self.box_origin_height = self.box.origin[1]  # Height of origin block in box
 
     self.height_map = get_height_map(self.level, self.box)  # Relative height map of given box
@@ -100,6 +104,19 @@ class Settlement:
     self.inner_canals = np.zeros_like(self.height_map, dtype=bool)
     self.domain = np.zeros_like(self.height_map, dtype=bool)  # Edge of settlement
     self.doors = [] #list of all door locations
+
+  
+  # Returns whether a block is in the given set
+  def __is_element_of(self, block_set, block):
+    for i in range(len(block_set)):
+      if block == block_set[i][0]:  # Its a match!
+        return True
+    return False
+
+  
+  # Returns a random block from the given set
+  def __get_element_of(self, block_set):
+    return block_set[random.randrange(0, len(block_set))]
 
 
   # Check whether given (x,z) is in the box
@@ -178,11 +195,11 @@ class Settlement:
 
 
   # Flatten area where the settlement will be
-  def __flatten(self, outer_r):
+  def __flatten(self):
     values, counts = np.unique(self.height_map.flatten(), return_counts=True)  # Compute mode
     mode_height = values[np.argmax(counts)]
     y_level = mode_height + self.box_origin_height  # Mode of height map
-    for r in range(1, outer_r+1):
+    for r in range(1, self.outer_r+1):
       for alpha in range(0,360):
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
@@ -210,7 +227,7 @@ class Settlement:
       self.__update_inner_canals(block[0], block[2])
     
       y = self.__get_height(block[0], block[2])+2
-      if self.__get_block(block[0], y, block[2]) == settings.OUTER_WALL[0]:
+      if self.__is_element_of(settings.OUTER_WALL, self.__get_block(block[0], y, block[2])):
         self.__place_grid(settings.WATER_GATE, block[0], block[2], 2)
 
         
@@ -235,7 +252,7 @@ class Settlement:
 
   # Generate canals surrounding the settlement, has a gear-like shape
   # Also preparations for the three smaller canals
-  def __generate_canals(self, outer_r, inner_r):
+  def __generate_canals(self):
     length = 0   # Current length of a gear-segment
     outer = bool(random.randint(0,1))  # Start with inner/outer part
     init_outer = outer  # Save value of first outer
@@ -247,12 +264,12 @@ class Settlement:
 
     # Generate canals
     for alpha in range(0, 360):
-      x_outer = int(self.x_center_box + outer_r * math.cos(math.pi*alpha/180))
-      z_outer = int(self.z_center_box + outer_r * math.sin(math.pi*alpha/180))
+      x_outer = int(self.x_center_box + self.outer_r * math.cos(math.pi*alpha/180))
+      z_outer = int(self.z_center_box + self.outer_r * math.sin(math.pi*alpha/180))
       y_outer = self.__get_height(x_outer, z_outer)
 
-      x_inner = int(self.x_center_box + inner_r * math.cos(math.pi*alpha/180))
-      z_inner = int(self.z_center_box + inner_r * math.sin(math.pi*alpha/180))
+      x_inner = int(self.x_center_box + self.inner_r * math.cos(math.pi*alpha/180))
+      z_inner = int(self.z_center_box + self.inner_r * math.sin(math.pi*alpha/180))
       y_inner = self.__get_height(x_inner, z_inner)
 
       # Switch between inner and outer circle
@@ -312,16 +329,16 @@ class Settlement:
   def __place_wall(self, x, y, z):
     L = settings.LEN_WALL + 1 if random.uniform(0,1) >= 0.5 else settings.LEN_WALL
     for l in range(L):
-      self.__place_block(settings.OUTER_WALL, x, y+l, z)
+      self.__place_block(self.__get_element_of(settings.OUTER_WALL), x, y+l, z)
     self.__place_block(settings.AIR, x, y+settings.LEN_WALL+1, z)
     
 
   # Generates the foundation of the settlement and adds walls surrounding it
   # Outer_r is necessary to know how far to look
-  def __foundation_and_walls(self, outer_r):
-    self.max_radius = np.full(360, outer_r, dtype=int)  # Max radius at which water is found per alpha
+  def __foundation_and_walls(self):
+    self.max_radius = np.full(360, self.outer_r, dtype=int)  # Max radius at which water is found per alpha
 
-    for r in range(1, outer_r):
+    for r in range(1, self.outer_r):
       for alpha in range(0, 360):     
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
@@ -337,10 +354,10 @@ class Settlement:
               continue
             y = self.__get_height(x+i, z+j)
             if not self.__get_block(x+i, y, z+j) == settings.WATER[0]:
-              if self.__count_water(x+i, z+j) > 0 and not self.__get_block(x+i, y, z+j) == settings.OUTER_WALL[0]:  # Create wall at (x+i,z+j)
+              if self.__count_water(x+i, z+j) > 0 and not self.__is_element_of(settings.OUTER_WALL, self.__get_block(x+i, y, z+j)):  # Create wall at (x+i,z+j)
                 self.__place_wall(x+i, y, z+j)
               else:  # Foundation floor
-                self.__place_block(settings.ROAD, x+i, y, z+j)
+                self.__place_block(self.__get_element_of(settings.ROAD), x+i, y, z+j)
 
         if self.__get_block(x, self.__get_height(x, z), z) == settings.WATER[0]:
           self.max_radius[alpha] = r  # Inner ring found for current alpha, update max_radius
@@ -359,26 +376,26 @@ class Settlement:
 
   # Check whether current spot is suitable for an entrance
   # Entrances should be on the inner ring of the wall and not near water gates
-  def __is_suitable(self, alpha, inner_r):
+  def __is_suitable(self, alpha):
     for i in range(-8, 9):
       if 0 <= alpha + i < 360:  # Should be in array self.max_radius
-        x = int(self.x_center_box + inner_r * math.cos(math.pi*(alpha+i)/180))
-        z = int(self.z_center_box + inner_r * math.sin(math.pi*(alpha+i)/180))
+        x = int(self.x_center_box + self.inner_r * math.cos(math.pi*(alpha+i)/180))
+        z = int(self.z_center_box + self.inner_r * math.sin(math.pi*(alpha+i)/180))
         y = self.__get_height(x, z)
 
-        if self.max_radius[alpha+i] > inner_r or self.__water_gate(x, y+2, z):
+        if self.max_radius[alpha+i] > self.inner_r or self.__water_gate(x, y+2, z):
           return False
     return True
   
 
   # Generate entrances into the outer walls, but only on the inner_r radius
-  def __entrances(self, inner_r, outer_r):
+  def __entrances(self):
     curr_len = settings.MIN_DIST_ENTRANCE-10
 
     for alpha in range(0, 360):
-      if self.__is_suitable(alpha, inner_r):  # Suitable spot for an entrance
+      if self.__is_suitable(alpha):  # Suitable spot for an entrance
         if curr_len >= settings.MIN_DIST_ENTRANCE and random.randint(0,1) <= settings.P_ENTRANCE:  # Enough distance between each entrance
-          for r in range(1, inner_r+3):
+          for r in range(1, self.inner_r+3):
             x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
             z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
@@ -388,7 +405,7 @@ class Settlement:
             self.__place_grid(settings.AIR, x, z, 4)
 
           # Create bridge from entrance to the outside
-          for r in range(inner_r-3, inner_r+4):
+          for r in range(self.inner_r-3, self.inner_r+4):
             x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
             z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
 
@@ -403,7 +420,7 @@ class Settlement:
   def __available(self, P1, P2):
     for x in range(P1[0], P2[0]):
       for z in range(P1[1], P2[1]):
-        if not self.__get_first_non_empty(x, z) == settings.ROAD[0]:
+        if not self.__is_element_of(settings.ROAD, self.__get_first_non_empty(x, z)):
           return False
     return True
 
@@ -430,20 +447,20 @@ class Settlement:
         block = self.__get_block(x, y, z)
 
         if not P1_x <= x < P1_x+width:
-          if x < P1_x and (block == settings.ROAD[0] or block == settings.WATER[0]):  # EAST
+          if x < P1_x and (self.__is_element_of(settings.ROAD, block) or block == settings.WATER[0]):  # EAST
             space[0] += 1
             if block == settings.WATER[0] and (not multiple or not along_x):  # Point towards canal
               space[0] += settings.CANAL_VALUE
-          elif x > P1_x+width-1 and (block == settings.ROAD[0] or block == settings.WATER[0]):  # WEST
+          elif x > P1_x+width-1 and (self.__is_element_of(settings.ROAD, block) or block == settings.WATER[0]):  # WEST
             space[3] += 1
             if block == settings.WATER[0] and (not multiple or not along_x):  # Point towards canal
               space[3] += settings.CANAL_VALUE
         if not P1_z <= z < P1_z+length:
-          if z < P1_z and (block == settings.ROAD[0] or block == settings.WATER[0]):  # SOUTH
+          if z < P1_z and (self.__is_element_of(settings.ROAD, block) or block == settings.WATER[0]):  # SOUTH
             space[2] += 1
             if block == settings.WATER[0] and (not multiple or along_x):  # Point towards canal
               space[2] += settings.CANAL_VALUE
-          elif z > P1_z+length-1 and (block == settings.ROAD[0] or block == settings.WATER[0]):  # NORTH
+          elif z > P1_z+length-1 and (self.__is_element_of(settings.ROAD, block) or block == settings.WATER[0]):  # NORTH
             space[1] += 1
             if block == settings.WATER[0] and (not multiple or along_x):  # Point towards canal
               space[1] += settings.CANAL_VALUE
@@ -501,10 +518,10 @@ class Settlement:
 
   # Create large plots, each containing multiple buildings
   # The plots are along one axis, and consequently the front can only be on two sides (along the selected axis)
-  def __place_large_plots(self, outer_r):
+  def __place_large_plots(self):
     temp = []  # Temporal storage of buildings
 
-    for r in range(0, outer_r):
+    for r in range(0, self.outer_r):
       for alpha in range(0, 360):
         if r > self.max_radius[alpha]:  # Skip, edge found
           continue
@@ -536,10 +553,10 @@ class Settlement:
   
 
   # Create small plots on which the small buildings can be generated
-  def __place_small_plots(self, outer_r):
+  def __place_small_plots(self):
     temp = []  # Temporal storage of buildings
 
-    for r in range(0, outer_r):
+    for r in range(0, self.outer_r):
       for alpha in range(0, 360):
         if r > self.max_radius[alpha]:  # Skip, edge found
           continue
@@ -611,7 +628,7 @@ class Settlement:
         if i in range(-1, 2) and j in range(-1, 2):
           if not self.__get_block(x+i, y+1, z+j) == settings.AIR[0]:
             return False
-          if not self.__get_block(x+i, y, z+j) == settings.ROAD[0]:
+          if not self.__is_element_of(settings.ROAD, self.__get_block(x+i, y, z+j)):
             return False
         
         # Check for nearby street lights
@@ -625,14 +642,13 @@ class Settlement:
     y = self.__get_height(x, z)
     for i in range(settings.LEN_POLE):
       self.__place_block(settings.POLE, x, y+i+1, z)
-    self.__place_block((123,0), x, y+settings.LEN_POLE+1, z)  # Redstone light
-    self.__place_block((178,0), x, y+settings.LEN_POLE+2, z)  # Daylight sensor
+    self.__place_block(settings.LIGHT_SOURCE, x, y+settings.LEN_POLE+1, z)
 
 
   # Generate street lights with redstone lamp + light sensor
   # They automatically turn on when it is dark
-  def __generate_street_light(self, outer_r):
-    for r in range(1, outer_r):
+  def __generate_street_light(self):
+    for r in range(1, self.outer_r):
       for alpha in range(0, 360):
         x = int(self.x_center_box + r * math.cos(math.pi*alpha/180))
         z = int(self.z_center_box + r * math.sin(math.pi*alpha/180))
@@ -642,7 +658,7 @@ class Settlement:
 
 
   # Lower water level by one block to make it lower that the roads
-  def __lower_water_level(self, outer_r):
+  def __lower_water_level(self):
     for x in range(self.water.shape[0]):
       for z in range(self.water.shape[1]):
         if self.water[x][z]:  # Canal location
@@ -668,7 +684,7 @@ class Settlement:
         y = self.__get_height(x+dx, z+dz)
         if not self.__get_block(x+dx, y+1, z+dz) == settings.AIR[0]:  # Space should be free
           return False
-        if not self.__get_block(x+dz, y, z+dz) == settings.ROAD[0]:  # Tree cant be on edge
+        if not self.__is_element_of(settings.ROAD, self.__get_block(x+dz, y, z+dz)):  # Tree cant be on edge
           return False
     return True
 
@@ -705,8 +721,8 @@ class Settlement:
 
 
   # Generate trees, bushes and grass in the settlement
-  def __generate_greenery(self, outer_r):
-    for r in range(1, outer_r):
+  def __generate_greenery(self):
+    for r in range(1, self.outer_r):
       for alpha in range(0, 360):
         if r > self.max_radius[alpha]:  # Skip
           continue
@@ -719,8 +735,9 @@ class Settlement:
           for dx in range(-1, 2):
             for dz in range(-1, 2):
               y = self.__get_height(x+dx, z+dz)
-              if random.uniform(0,1) <= settings.P_DIRT and self.__get_block(x+dz, y, z+dz) == settings.ROAD[0]:
-                self.__place_block(settings.DIRT, x+dx, y, z+dz) 
+              if random.uniform(0,1) <= settings.P_DIRT and self.__is_element_of(settings.ROAD, self.__get_block(x+dz, y, z+dz)):
+                self.__place_block(settings.DIRT, x+dx, y, z+dz)
+                self.__place_block(settings.BUSH, x+dx, y+1, z+dz)
 
           self.__generate_tree(x, z)
           alpha += 20  # Make sure that there is sufficient space between every tree
@@ -733,7 +750,7 @@ class Settlement:
       for z in range(self.domain.shape[1]):
         if self.domain[x][z] and not self.water[x][z]:  # Should be inside the settlement
           y = self.__get_height(x, z)
-          if self.__get_block(x, y, z) == settings.ROAD[0]:
+          if self.__is_element_of(settings.ROAD, self.__get_block(x, y, z)):
             pos_loc.append((x,y,z))  # Possible location for the stones
     
     loc = random.sample(pos_loc, k=3)  # 3 stones, so sample three locations
@@ -745,29 +762,26 @@ class Settlement:
 
   # Generates the settlement
   def generate(self):
-    # Radius of outer and inner circles, forming the gear-shape 
-    outer_r, inner_r = random.randint(settings.MIN_OUTER, settings.MAX_OUTER), random.randint(settings.MIN_INNER, settings.MAX_INNER) # TODO
-
     print "\n==== Start generating the beautiful settlement! ===="
 
     print "Flatten area within the outer canals.."
-    self.__flatten(outer_r)  # Flatten area within outer canals -> every block becomes a grass block
+    self.__flatten()  # Flatten area within outer canals -> every block becomes a grass block
 
     print "Generating the outer canals.."
-    P0, P1, P2 = self.__generate_canals(outer_r, inner_r)  # Canals surrounding the settlement
+    P0, P1, P2 = self.__generate_canals()  # Canals surrounding the settlement
 
     print "Generating foundation and outer walls.."
-    self.__foundation_and_walls(outer_r)  # Foundation of settlement + walls
+    self.__foundation_and_walls()  # Foundation of settlement + walls
 
     print "Generating entrances..."
-    self.__entrances(inner_r, outer_r)  # Generating entrances in the outer walls
+    self.__entrances()  # Generating entrances in the outer walls
 
     print "Generating inner canals.."
     self.__generate_inner_canals(P0, P1, P2)  # Three inner canals
 
     print "Generating plots for the buildings.."
-    self.__place_large_plots(outer_r)  # Generate random big plots, each containing multiple buildings
-    self.__place_small_plots(outer_r)  # Generate random small plots, each containing one building
+    self.__place_large_plots()  # Generate random big plots, each containing multiple buildings
+    self.__place_small_plots()  # Generate random small plots, each containing one building
 
     print "Generating buildings.."
     self.__generate_buildings()
@@ -776,13 +790,13 @@ class Settlement:
     self.__generate_bridges()  # Lower water level by one block
 
     print "Generating street lights.."
-    self.__generate_street_light(outer_r)  # Generate street lights
+    self.__generate_street_light()  # Generate street lights
 
     print "Lower water level.."
-    self.__lower_water_level(outer_r)  # Lower water level by one block
+    self.__lower_water_level()  # Lower water level by one block
 
     print "Generating greenery.."
-    self.__generate_greenery(outer_r)  # Generate trees, bushes and grass 
+    self.__generate_greenery()  # Generate trees, bushes and grass 
 
     print "Generating secret stuff.."
     self.__three_stones()   # The three stones of Leiden
