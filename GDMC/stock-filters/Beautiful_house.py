@@ -376,8 +376,16 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
 
         for stair_z in range (min_z+2, max_z-2):
-            utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center, build_height, stair_z)
-            utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_west, build_height, stair_z)
+            if (max_x-min_x)%2 == 0:
+                utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center, build_height, stair_z)
+                utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_west, build_height, stair_z)
+            else:
+                if max_x-min_x < 3:
+                    utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center, build_height, stair_z)
+                else:
+                    utilityFunctions.setBlock(level, (pallete.int_stair, 0), x_center-1, build_height, stair_z)
+                    utilityFunctions.setBlock(level, pallete.int_wood, x_center, build_height, stair_z)
+                    utilityFunctions.setBlock(level, (pallete.int_stair, 1), x_center+1, build_height, stair_z)
 
 
     elif chosen_wall == 'west' or chosen_wall == 'east':
@@ -395,7 +403,6 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 for z in range(min_z+1, max_z-1):
                     utilityFunctions.setBlock(level, (pallete.int_stair, 1), x, build_height, z)
 
-
                 x += 2
                 if x >= max_x:
                     go = False
@@ -404,7 +411,6 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 for z in range(min_z, max_z):
                     for y in range(build_height, build_height+(height_y-2)):
                         utilityFunctions.setBlock(level, pallete.bookshelf, x, y, z)
-
 
                 x += 1
                 if x >= max_x:
@@ -427,8 +433,6 @@ def build_library(level, pallete, length_x, height_y, length_z, build_height, mi
                 if x >= max_x:
                     go = False
             left_part = not left_part
-
-
 
 
 def build_dining(level, pallete, length_x, height_y, length_z, build_height, min_x, max_x, min_z, max_z, no_floors):
@@ -532,8 +536,6 @@ def build_interior(level, pallete, length_x, height_y, length_z, no_floors):
                 current_building_interior = random.choice(optional_interiors)
 
         current_building_interior = 'library'
-        print("current_floor")
-        print(current_floor)
         print("Building " + current_building_interior)
         build_height = 1+(current_floor*height_y)
         stair_loc = current_floor%2
@@ -636,7 +638,6 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
         w1ndow = not bool((length_x-1)%2) # Determine is windows are divisible by 2, for windows of 1 wide
         w2ndow = not bool((length_x-1)%3) # Determine is windows are divisible by 3, for windows of 2 wide
         if w1ndow and w2ndow:
-            #print("both possible")
             wide_windows = random.randint(0, 1)
             if wide_windows:
                 n_windows = length_x//2
@@ -665,7 +666,6 @@ def build_house(length_x, height_y, length_z, rotations, no_floors, facade_type,
             other_floor_windows(level, pallete, length_x, height_y, offset)
     #'''
     #source for door and bed rotations: https://github.com/abrightmoore/ProceduralSettlementsInMinecraft/blob/master/House.py
-    #print("level:", level.size)
 
     utilityFunctions.setBlock(level, (pallete.door, door_rot), door_x, base_y, door_z)
     utilityFunctions.setBlock(level, (pallete.door, door_rot + 8), door_x, base_y + 1, door_z)
