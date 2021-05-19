@@ -144,8 +144,8 @@ def get_bridge_locations(level, box, canal_map, doors):
         offspring = mutation(offspring, waterpoints)
 
         # new_population = np.append(sorted_candidates, offspring)
-        print(offspring.shape)
-        print(sorted_candidates.shape)
+        # print(offspring.shape)
+        # print(sorted_candidates.shape)
 
         new_population = np.append(sorted_candidates, offspring, axis=0)
 
@@ -163,8 +163,8 @@ def get_bridge_locations(level, box, canal_map, doors):
         if new_best > best_fitness:
             best_fitness = new_best
 
-        print("Best fitness found: ")
-        print(best_fitness)
+        # print("Best fitness found: ")
+        # print(best_fitness)
         i+=1
 
     return sorted_candidates[0]
@@ -226,7 +226,7 @@ def place_bridges(level, box, water, doors):
     for bridge in bridge_loca:
         box_coords = find_bridge_box(level, box, bridge)
         y = box.maxy-1
-        print(box_coords)
+        # print(box_coords)
         for count, value in enumerate(box_coords):
             x = value[0]
             z = value[1]

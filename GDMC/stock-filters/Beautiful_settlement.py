@@ -630,14 +630,14 @@ class Settlement:
     print "Generating buildings.."
     self.__generate_buildings()
 
-    # print "Generating street lights.."
-    # self.__generate_street_light(outer_r)  # Generate street lights
-
-    # print "Lower water level.."
-    # self.__lower_water_level(outer_r)  # Lower water level by one block
-
     print "Generating bridges.."
     self.__generate_bridges()  # Lower water level by one block
+
+    print "Generating street lights.."
+    self.__generate_street_light(outer_r)  # Generate street lights
+
+    print "Lower water level.."
+    self.__lower_water_level(outer_r)  # Lower water level by one block
 
     print "\nGeneration completed!"
 
