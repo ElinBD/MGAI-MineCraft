@@ -7,11 +7,13 @@ import random
 import math
 import Beautiful_settings as settings
 
+from Beautiful_edges import smoothen_edges
 from Beautiful_meta_analysis import get_height_map, get_biome_map, get_surface_type_map
 from Beautiful_starting_point import find_starting_point
 from Beautiful_terraforming import flatten_box
 from Beautiful_house import place_house
 from Beautiful_bridge import place_bridges
+
 
 inputs = (
 	("Beautiful Settlement Generator", "label"),
@@ -658,7 +660,12 @@ class Settlement:
   def __generate_bridges(self):
     place_bridges(self.level, self.box, self.inner_canals, self.doors)
 
-  
+  # Smoothen edges of the settlement using a gaussian filter)
+  def __smoothen_edges(self):
+    smoothen_edges(self.level, self.box, self.height_map, self.surface_map, self.domain,
+                   self.x_center_box, self.z_center_box)
+
+
   # Determine whether there is space for a tree at (x,z)
   def __space_tree(self, x, z):
     for dx in range(-2, 3):
@@ -784,6 +791,9 @@ class Settlement:
 
     print "Generating secret stuff.."
     self.__three_stones()   # The three stones of Leiden
+
+    print "Smoothen edges.."
+    self.__smoothen_edges() # Smoothen edges of the settlement
 
     print "\nGeneration completed!"
 

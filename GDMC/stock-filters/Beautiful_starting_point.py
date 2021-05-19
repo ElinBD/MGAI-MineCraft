@@ -4,6 +4,7 @@ import numpy as np
 import utilityFunctions as utilityFunctions
 
 from Beautiful_meta_analysis import get_height_map, get_surface_type_map, get_biome_map
+from Beautiful_settings import SMOOTH_AREA
 from skimage.filters.rank import modal, gradient, gradient_percentile, maximum, percentile
 from skimage.morphology import (square, rectangle, diamond, disk,
                                 octagon, star)
@@ -33,6 +34,9 @@ def find_starting_point(box, shape, size, height_map, surface_type_map, biome_ma
     if shape == 'diamond':
         area = diamond(size)
         offset = int(size)
+
+    #to make sure edge is far enough away from center to smoothen at least 10 blocks from outer_max
+    offset += SMOOTH_AREA
 
 
     if (box.size[0] <= 2*offset) or (box.size[2] <= 2*offset):

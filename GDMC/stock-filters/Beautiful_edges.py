@@ -1,0 +1,140 @@
+from Beautiful_meta_analysis import get_height_map, get_surface_type_map, get_biome_map
+from Beautiful_settlement import Settlement
+import Beautiful_settings as settings
+from scipy.ndimage import gaussian_filter
+import itertools
+import numpy as np
+import utilityFunctions as utilityFunctions
+
+
+
+inputs = (
+	("Function to smooth edges of Beautiful Settlement", "label"),
+	("Creators: Tim", "label")
+	)
+
+
+def smoothen_edges(level, box, height_map, surface_type_map, domain, x_center, z_center):
+	#define subset of box to smoothen
+	smooth_min_x = x_center-settings.MAX_OUTER-settings.SMOOTH_AREA
+	smooth_max_x = x_center+settings.MAX_OUTER+settings.SMOOTH_AREA
+	smooth_min_z = z_center-settings.MAX_OUTER-settings.SMOOTH_AREA
+	smooth_max_z = z_center+settings.MAX_OUTER+settings.SMOOTH_AREA
+
+	#reduce maps to subset
+	height_map = height_map[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+	domain = domain[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+	surface_type_map = surface_type_map[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+
+	#apply gaussian filter to height map subset
+	smoothened_map = gaussian_filter(height_map, settings.SIGMA)
+
+	#iterate over subset of box and change to smoothened height for all coordinates outside settlement
+	pos_top_layer = itertools.product(xrange(smooth_min_x, smooth_max_x),
+									  xrange(smooth_min_z, smooth_max_z)
+									  )
+	for pos in pos_top_layer:
+
+		#transform from level to box coords
+		pos_x_map = pos[0] - smooth_min_x
+		pos_z_map = pos[1] - smooth_min_z
+		block_on_top = False
+
+		#only change if it doesnt belong to settlement domain
+		if domain[pos_x_map, pos_z_map] == False:
+
+			height = height_map[pos_x_map, pos_z_map]
+			smoothend_height = smoothened_map[pos_x_map, pos_z_map]
+			block_type = surface_type_map[pos_x_map, pos_z_map]
+
+			#if block type is non standard (bushes, trees etc., place it on top instead)
+			if block_type > 15:
+				block_on_top = block_type
+				block_type = level.blockAt(pos[0], box.miny+height-1 , pos[2])
+
+
+			#lower terrain
+			if height >= smoothend_height:
+
+				for y in xrange((box.miny + height), (box.miny + smoothend_height) - 1, -1):
+					utilityFunctions.setBlock(level, (0, 0), pos[0] + box.minx, y,
+											  pos[1] + box.minz)
+					if y == (box.miny + smoothend_height):
+						utilityFunctions.setBlock(level, (block_type, 0), pos[0] + box.minx, y,
+												  pos[1] + box.minz)
+
+			#elevate terrain
+			if height < smoothend_height:
+
+				for y in xrange((box.miny + height), (box.miny + smoothend_height), 1):
+					utilityFunctions.setBlock(level, (block_type, 0), pos[0] + box.minx, y,
+											  pos[1] + box.minz)
+
+			#place special blocks on top
+			if block_on_top:
+				utilityFunctions.setBlock(level, (block_on_top, np.random.randint(0,3)), pos[0] + box.minx,
+										  box.miny + smoothend_height + 1,
+										  pos[1] + box.minz)
+
+
+
+def perform(level,box,options):
+
+	settlement = Settlement(level,box)
+	settlement.generate()
+	area_to_smooth = settings.SMOOTH_AREA
+	smooth_min_x = settlement.x_center_box-settings.MAX_OUTER-area_to_smooth
+	smooth_max_x = settlement.x_center_box+settings.MAX_OUTER+area_to_smooth
+	smooth_min_z = settlement.z_center_box-settings.MAX_OUTER-area_to_smooth
+	smooth_max_z = settlement.z_center_box+settings.MAX_OUTER+area_to_smooth
+
+	height_map = get_height_map(level, box)[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+	domain = settlement.domain[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+	smoothened_map = gaussian_filter(height_map, 8)
+	surface_type_map = get_surface_type_map(level, box)[smooth_min_x:smooth_max_x, smooth_min_z:smooth_max_z]
+
+	pos_top_layer = itertools.product(xrange(smooth_min_x, smooth_max_x),
+									  xrange(smooth_min_z, smooth_max_z)
+									  )
+	for pos in pos_top_layer:
+
+		pos_x_map = pos[0] - smooth_min_x
+		pos_z_map = pos[1] - smooth_min_z
+		block_on_top = False
+
+		if domain[pos_x_map, pos_z_map] == False:
+
+			height = height_map[pos_x_map, pos_z_map]
+			smoothend_height = smoothened_map[pos_x_map, pos_z_map]
+			block_type = surface_type_map[pos_x_map, pos_z_map]
+
+			if block_type > 15:
+				block_on_top = block_type
+				block_type = 2
+
+
+
+			if height >= smoothend_height:
+
+				for y in xrange((box.miny + height), (box.miny + smoothend_height) - 1, -1):
+					utilityFunctions.setBlock(level, (0, 0), pos[0] + box.minx, y,
+											  pos[1] + box.minz)
+					if y == (box.miny + smoothend_height):
+						#print('here')
+						utilityFunctions.setBlock(level, (block_type, 0), pos[0] + box.minx, y,
+												  pos[1] + box.minz)
+
+
+			if height < smoothend_height:
+
+				for y in xrange((box.miny + height), (box.miny + smoothend_height), 1):
+					utilityFunctions.setBlock(level, (block_type, 0), pos[0] + box.minx, y,
+											  pos[1] + box.minz)
+
+
+			if block_on_top:
+				utilityFunctions.setBlock(level, (block_on_top, np.random.randint(0,3)), pos[0] + box.minx, box.miny + smoothend_height + 1,
+										  pos[1] + box.minz)
+
+
+

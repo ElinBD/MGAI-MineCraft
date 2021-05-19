@@ -22,6 +22,9 @@ MAX_OUTER = 45
 MIN_INNER = MIN_OUTER - 8
 MAX_INNER = MIN_OUTER - 5
 
+# Area outside the outer circle to smoothen,
+SMOOTH_AREA = 15
+SIGMA = 8
 
 # ==== Plot generation settings ====
 # PLOTS FOR ONE BUILDING
