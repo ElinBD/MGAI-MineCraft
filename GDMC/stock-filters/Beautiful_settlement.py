@@ -434,7 +434,8 @@ class Settlement:
   def __available(self, P1, P2):
     for x in range(P1[0], P2[0]):
       for z in range(P1[1], P2[1]):
-        if not self.__is_element_of(settings.ROAD, self.__get_first_non_empty(x, z)):
+        if not self.__is_element_of(settings.ROAD, self.__get_first_non_empty(x, z)) or \
+           not self.__get_block(x, self.__get_height(x,z)+1, z) == settings.AIR[0]:
           return False
     return True
 
