@@ -21,7 +21,7 @@ inputs = (
 
 def build_bridge(length, delta, width):
     #delta must be greater than length / 2
-    delta = delta if delta < int((length - 1)/2) else int((length  - 1) / 2)
+    delta = delta if delta < int((length - 0)/2) else int((length  - 0) / 2)
 
     height = delta + 3
     level = MCSchematic((length, height, width))#working object

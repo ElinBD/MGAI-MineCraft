@@ -167,7 +167,7 @@ class Pallete():
         self.ladder = 65
         self.bed = 26
 
-        self.torch = (50, 0)
+        self.torch = (50, 5)
 
         self.cauldron = 118
         self.furnace = 61

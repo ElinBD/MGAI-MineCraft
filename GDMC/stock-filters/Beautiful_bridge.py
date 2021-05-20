@@ -9,7 +9,7 @@ from Beautiful_new_bridge import place_bridge
 # Information visible in mcedit, can be used for user-input
 inputs = (
 	("Bridge placer", "label"),
-	("Creator: Elin", "label"))
+	("Creator: Elin and Koen", "label"))
 
 # def get_waterpoints(level, box):
 #     """Get all coordinates where blocktype is water"""
@@ -225,30 +225,23 @@ def place_bridges(level, box, water, doors):
     
     # # find the rest of the bridgebox for each bridge
     for bridge in bridge_loca:
-        print "for"
         box_coords = find_bridge_box(level, box, bridge, height_map)
-        print box_coords
-        print "fro"
         #print len(box_coords)
         box_min = box_coords[0]
         box_max = box_coords[-1]
-        
-        print box_min, box_max
-        print box_min[0], box_min[1], box_max[0], box_max[1]
 
         width = 3
         
         y = height_map[bridge[0], bridge[1]] + box.miny - 1
         if box_max[0] - box_min[0] == 0:#z coord changes
             length = box_max[1] - box_min[1]
-            delta = min(3, int((length  + 1) / 2))
-            place_bridge(level, length + 2, delta, width, (box_min[0] - 1, y + 1, box_min[1]), 1)
-            #TODO cry about rotations :-(
+            delta = min(3, int((length + 1) / 2))
+            place_bridge(level, length + 1, delta, width, (box_min[0] - 1, y + 1, box_min[1]), 1)
 
         else:#x coord changes
             length = box_max[0] - box_min[0]
             delta = min(3, int((length + 1) / 2))
-            place_bridge(level, length + 2, delta, width, (box_min[0], y + 1, box_min[1] - 1), 0)
+            place_bridge(level, length + 1, delta, width, (box_min[0], y + 1, box_min[1] - 1), 0)
 
 '''
 def place_bridges(level, box, water, doors):
