@@ -319,7 +319,7 @@ def build_floor(level, pallete, length_x, height_y, length_z, base_x, base_y, ba
                 if i < height_y - 1:
                     utilityFunctions.setBlock(level, (pallete.stair, 7), start_x, base_y+i, start_z+i+1)
                 else:#one extra floor block for more convenient walking
-                    utilityFunctions.setBlock(level, pallete.floor, start_x, base_y+i, start_z+i+1)           
+                    utilityFunctions.setBlock(level, pallete.floor, start_x, base_y+i, start_z+i+1)
 
             for z in range(base_z + 1, start_z):
                 utilityFunctions.setBlock(level, pallete.floor, base_x + 1, y_ceiling, z)
@@ -636,7 +636,7 @@ def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, mi
                     utilityFunctions.setBlock(level, pallete.int_wood, x_west-1, build_height, max_z-1)
                     utilityFunctions.setBlock(level, pallete.torch, x_west-1, build_height+1, max_z-1)
                 else:
-                    utilityFunctions.setBlock(level, (pallete.chest, 2), x_west-1, build_height, max_z-1)
+                    utilityFunctions.setBlock(level, (pallete.chest, 3), x_west-1, build_height, min_z)
 
         else:
             if no_beds == 1:
