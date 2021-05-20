@@ -47,12 +47,15 @@ def smoothen_edges(level, box, height_map, surface_type_map, domain, x_center, z
 			block_type = surface_type_map[pos_x_map, pos_z_map]
 
 			#if block type is non standard (bushes, trees etc., place it on top instead)
-			if block_type > 15:
-				block_on_top = block_type
-				try:
-					block_type = level.blockAt(pos[0], box.miny+height-1 , pos[2])
-				except IndexError:
-					block_type = 2
+			if block_type in (31, 32):
+			#	block_on_top = block_type
+				block_type = 2
+
+			if block_type == 109:
+				block_type = 2
+
+			if block_type != 2:
+				print(block_type)
 
 			#lower terrain
 			if height >= smoothend_height:
@@ -72,10 +75,13 @@ def smoothen_edges(level, box, height_map, surface_type_map, domain, x_center, z
 											  pos[1] + box.minz)
 
 			#place special blocks on top
-			if block_on_top:
-				utilityFunctions.setBlock(level, (block_on_top, np.random.randint(0,3)), pos[0] + box.minx,
-										  box.miny + smoothend_height + 1,
-										  pos[1] + box.minz)
+			if block_type == 2:#
+				flower_int = np.random.randint(1, 5):
+
+				if flower_int == 1:
+					utilityFunctions.setBlock(level, (np.random.randint(31,33), np.random.randint(0,2)), pos[0] + box.minx,
+											  box.miny + smoothend_height + 1,
+											  pos[1] + box.minz)
 
 
 
