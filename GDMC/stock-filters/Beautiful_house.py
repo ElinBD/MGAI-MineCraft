@@ -633,8 +633,8 @@ def build_bedroom(level, pallete, length_x, height_y, length_z, build_height, mi
 
             if x_west-1 >= min_x:
                 if random.randint(0,1):
-                    utilityFunctions.setBlock(level, pallete.int_wood, x_west-1, build_height, max_z-1)
-                    utilityFunctions.setBlock(level, pallete.torch, x_west-1, build_height+1, max_z-1)
+                    utilityFunctions.setBlock(level, pallete.int_wood, x_west-1, build_height, min_z)
+                    utilityFunctions.setBlock(level, pallete.torch, x_west-1, build_height+1, min_z)
                 else:
                     utilityFunctions.setBlock(level, (pallete.chest, 3), x_west-1, build_height, min_z)
 
