@@ -76,7 +76,7 @@ def smoothen_edges(level, box, height_map, surface_type_map, domain, x_center, z
 
 			#place special blocks on top
 			if block_type == 2:#
-				flower_int = np.random.randint(1, 5):
+				flower_int = np.random.randint(1, 5)
 
 				if flower_int == 1:
 					utilityFunctions.setBlock(level, (np.random.randint(31,33), np.random.randint(0,2)), pos[0] + box.minx,
