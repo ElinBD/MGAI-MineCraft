@@ -19,7 +19,7 @@ inputs = (
     ("offset (z)", (0, -256, 256)),
     ("door location (N=0, W=1, S=2, E=3)", (0, 0, 3)),
     ("number of floors", (2, 1, 10)),
-    ("facade type (small stairs=0, large stairs=1, bell=2, flat=3)", (0, 0, 3))
+    ("facade type (small stairs=0, large stairs=1, bell=2", (0, 0, 2))
 )
 
 
