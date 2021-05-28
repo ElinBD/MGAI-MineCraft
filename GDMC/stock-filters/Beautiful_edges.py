@@ -54,9 +54,6 @@ def smoothen_edges(level, box, height_map, surface_type_map, domain, x_center, z
 			if block_type == 109:
 				block_type = 2
 
-			if block_type != 2:
-				print(block_type)
-
 			#lower terrain
 			if height >= smoothend_height:
 

@@ -21,6 +21,8 @@ inputs = (
 
 def find_starting_point(box, shape, size, height_map, surface_type_map, biome_map, plains = True, size_2 = False):
 
+    print(plains)
+
     if shape == 'square':
         area = square(size)
         offset = int(size/2)
@@ -53,7 +55,7 @@ def find_starting_point(box, shape, size, height_map, surface_type_map, biome_ma
 
 
 
-    #increase value of centres of areas that include water to avoid selecting them
+    #increase value of centres of areas that are > 10% water to avoid selecting them
     gradient_map[surface_max_map > 99] += 50
     #increase value of centres whose majority biome is not plains
     if plains:
@@ -73,11 +75,16 @@ def find_starting_point(box, shape, size, height_map, surface_type_map, biome_ma
             candidates = np.where(gradient_map[offset:box.size[0] - offset, offset:box.size[2] - offset]
                                   == np.amin(gradient_map[offset:box.size[0] - offset, offset:box.size[2] - offset]))
             elev = np.amin(gradient_map[offset:box.size[0] - offset, offset:box.size[2] - offset])
-            if elev >= 50:
+
+            if elev >= 50 and plains:
                 raise ValueError('No suitable area found. Try smaller size or different box')
 
-            print('no perfectly flat area of given size in box, area with {} elevation excluding {} percent of area chosen instead'.format(
-                    elev, excl_perc))
+            elif elev >= 50 and (not plains):
+                print('No suitable area with less than 10% water found. Best area including more water was chosen instead')
+
+            else:
+                print('No perfectly flat area of given size in box, area with {} elevation excluding {} percent of area chosen instead'.format(
+                        elev, excl_perc))
             print('{} candidate(s) found'.format(len(candidates[0])))
 
             index = np.random.randint(len(candidates[0]))
@@ -143,7 +150,7 @@ def perform(level, box, options):
     surface_type_map = get_surface_type_map(level, box)
     biome_map = get_biome_map(level, box)
 
-    cand = find_starting_point(box, shape, size, height_map, surface_type_map, biome_map, plains = True, size_2 = size_2)
+    cand = find_starting_point(box, shape, size, height_map, surface_type_map, biome_map, plains = False, size_2 = size_2)
     print(cand)
 
     for i in range(0, 100):
