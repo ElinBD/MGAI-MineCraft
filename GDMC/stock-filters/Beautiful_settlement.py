@@ -603,7 +603,7 @@ class Settlement:
           for p in partit:
             base = (building.P[0] + cum_p, building.P[1], building.P[2])
             cum_p += p
-            facade_type = random.randint(0, 3)
+            facade_type = random.randint(0, 2)
             h, n = building_size(p, building.length)
             door = place_house(self.level, p, h, building.length, base, building.front, n, facade_type)
         #end if
@@ -615,13 +615,13 @@ class Settlement:
             base = building.P
             base = (building.P[0], building.P[1], building.P[2] + cum_p)
             cum_p += p
-            facade_type = random.randint(0, 3)
+            facade_type = random.randint(0, 2)
             h, n = building_size(p, building.width)
             door = place_house(self.level, p, h, building.width, base, building.front, n, facade_type)
         #end else
       #end if multiple
       else:
-        facade_type = random.randint(0, 3)
+        facade_type = random.randint(0, 2)
         h, n = building_size(building.width, building.length)
         if building.front % 2 == 0:
           door = place_house(self.level, building.width, h, building.length, building.P, building.front, n, facade_type)
