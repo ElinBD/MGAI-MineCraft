@@ -140,7 +140,6 @@ def facade(level, pallete, length_x, height_y, length_z, base_x, base_y, base_z,
         utilityFunctions.setBlock(level, pallete.window, x_west, y, base_z)
 
 def ground_floor_windows(level, pallete, width, height):
-    #print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-4]:
@@ -158,7 +157,6 @@ def ground_floor_windows(level, pallete, width, height):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
 
 def other_floor_windows(level, pallete, width, height, offset):
-    #print("not to Sem")
     z = 0
     if width <= 6:
         for x in [1,width-2]:
@@ -180,7 +178,6 @@ def other_floor_windows(level, pallete, width, height, offset):
                 utilityFunctions.setBlock(level, pallete.window, x, y, z)
 
 def windows(level, pallete, length_x, height_y, no_floors, window_width, door_x):
-    #print("to Sem")
     x_center = length_x/2
     x_west = x_center - 1 if length_x % 2 == 0 else x_center
 
