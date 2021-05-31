@@ -13,6 +13,7 @@ from Beautiful_starting_point import find_starting_point
 from Beautiful_terraforming import flatten_box
 from Beautiful_house import place_house
 from Beautiful_bridge import place_bridges
+from Beautiful_sign import place_vector
 
 
 inputs = (
@@ -104,6 +105,11 @@ class Settlement:
     # Absolute centerpoint of settlement (WORLD)
     try:
       self.center_world = find_starting_point(self.box, "disk", settings.MAX_OUTER, self.height_map, self.surface_map, self.biome_map)
+      print "Building village at: (x,z) = " 
+      print self.center_world
+      place_vector(level, self.center_world[0], 100, self.center_world[1])
+      place_vector(level, self.center_world[0], 150, self.center_world[1])
+      place_vector(level, self.center_world[0], 200, self.center_world[1])
     except ValueError:
       self.center_world = find_starting_point(self.box, "disk", settings.MAX_OUTER, self.height_map, self.surface_map, self.biome_map, plains=False)
 
@@ -824,6 +830,9 @@ class Settlement:
     self.__smoothen_edges() # Smoothen edges of the settlement
 
     print "\nGeneration completed!"
+
+    print "Village built at: (x,z) = " 
+    print self.center_world
 
 
 # Starting point of generating the beautiful settlement
