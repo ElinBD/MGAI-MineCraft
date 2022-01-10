@@ -2,12 +2,31 @@
 ### Koen Bouwman, Elin Dijkstra, Sem Kluiver, Jerry Schonenberg, Tim Schwarz
 ##### Modern Game AI Algorithms | 20-05-2021
 
+![Final Generated Town](./figures/generated_town_final.png)
+
 This repository contains the code to generate a beautiful settlement in Minecraft using the MCEdit framework. The generation of the settlement is inspired by dutch towns. It contains multiple filters which can be executed by MCEdit. This is an attempt at solving the [Generative Design in Minecraft competition (GDMC)](https://gendesignmc.engineering.nyu.edu/).
+
+![Final Generated Town at night](./figures/generated_town_final_night.png)
 
 ## Contents
 
+* [Features](#features)
 * [Requirements](#requirements)
 * [Usage](#usage)
+
+## Features <div id="features"></div>
+Our beautiful classic Dutch town generator features a variety of random, albeit aesthetically pleasing houses. Included features are:
+* Automatic city planning and street placement
+* A variety of classic Dutch facades
+* Three types of rooms: kitchens, libraries and bedrooms
+* AI-placed bridges
+* Adaptive window layouts depending on building width
+* Colored and brick houses
+
+![Facades](./figures/facades.png)
+
+![Interiors](./figures/interiors.png)
+
 
 ## Requirements <div id="requirements"></div>
 * python==2.7
